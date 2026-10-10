@@ -233,6 +233,82 @@
     }
     .photo-caption h3 { font-size: clamp(30px, 5vw, 70px); }
 
+    /* fabrication (AI process demo) */
+    #fabrication { min-height: auto; }
+    .fab-head { max-width: 760px; margin-bottom: 40px; }
+    .fab-head p { color: var(--muted); line-height: 1.6; }
+    .fab-grid { display: grid; grid-template-columns: minmax(260px, 380px) 1fr; gap: 32px; align-items: start; }
+    .phone {
+      position: relative; aspect-ratio: 9 / 16; border-radius: 34px; overflow: hidden;
+      background: #000; border: 8px solid #1b1410; box-shadow: 0 40px 80px -30px rgba(0,0,0,.6);
+    }
+    .phone video, .phone canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .phone canvas { pointer-events: none; }
+    .vid-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+    .vid-tabs button { flex: 1; padding: 10px 12px; border-radius: 999px; font-weight: 700; font-size: 13px; background: var(--card); border: 1px solid var(--line); }
+    .vid-tabs button.active { background: var(--ink); color: #fff; }
+    .vid-ctrl { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+    .vid-ctrl button { width: 40px; height: 40px; border-radius: 50%; background: var(--ink); color: #fff; flex: none; }
+    .vid-bar { flex: 1; height: 6px; border-radius: 3px; background: var(--line); position: relative; overflow: hidden; cursor: pointer; }
+    .vid-bar i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--accent); }
+    .vid-time { font-variant-numeric: tabular-nums; font-size: 12px; color: var(--muted); font-weight: 600; min-width: 74px; text-align: right; }
+
+    .steps { list-style: none; display: grid; gap: 10px; counter-reset: st; }
+    .steps li {
+      counter-increment: st; display: grid; grid-template-columns: 42px 1fr auto; gap: 14px; align-items: center;
+      padding: 14px 16px; border-radius: 16px; background: var(--card); border: 1px solid var(--line);
+      backdrop-filter: blur(10px); transition: background .4s, color .4s, transform .4s; cursor: pointer;
+    }
+    .steps li::before {
+      content: counter(st, decimal-leading-zero); font-family: var(--display); font-size: 18px; color: var(--accent);
+      width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; background: #fff;
+    }
+    .steps b { display: block; font-size: 15px; }
+    .steps small { color: var(--muted); font-size: 13px; line-height: 1.4; }
+    .steps .chk { font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 999px; background: var(--line); color: var(--muted); white-space: nowrap; }
+    .steps li.done .chk { background: #2e7d32; color: #fff; }
+    .steps li.live { background: var(--ink); color: #fff; transform: translateX(6px); }
+    .steps li.live small { color: rgba(255,255,255,.7); }
+    .steps li.live .chk { background: var(--accent); color: #fff; }
+    .ai-log {
+      margin-top: 16px; background: #120d0a; color: #b7f5c4; border-radius: 16px; padding: 14px 16px;
+      font: 500 12.5px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; height: 156px; overflow: hidden;
+      display: flex; flex-direction: column; justify-content: flex-end;
+    }
+    .ai-log div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ai-log .t { color: #ff9d3b; }
+
+    .lab { margin-top: 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .lab-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+    .lab-card h3 { font-size: 26px; margin: 12px 0 8px; }
+    .lab-card > p { color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .lab-controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 18px 0; }
+    .lab-controls select { font: inherit; font-weight: 700; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line); background: #fff; color: var(--ink); }
+    .lab-controls label { font-size: 13px; font-weight: 700; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+    .lab-controls input[type=range] { accent-color: var(--accent); width: 140px; }
+    .compo { display: grid; gap: 10px; }
+    .compo-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-size: 14px; }
+    .compo-row b { font-variant-numeric: tabular-nums; }
+    .compo-row .bar { grid-column: 1 / -1; height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+    .compo-row .bar i { display: block; height: 100%; background: var(--c, var(--accent)); border-radius: 4px; transition: width .8s cubic-bezier(.2,.8,.2,1); }
+    .tol { margin-top: 14px; font-size: 13px; color: var(--muted); }
+    .nutri { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 14px; }
+    .nutri th, .nutri td { padding: 9px 4px; border-bottom: 1px solid var(--line); text-align: right; font-variant-numeric: tabular-nums; }
+    .nutri th:first-child, .nutri td:first-child { text-align: left; }
+    .nutri thead th { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+    .nutri td.sub { padding-left: 16px; color: var(--muted); }
+    .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .badge { font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 999px; background: #fff; border: 1px solid var(--line); }
+    .badge.ok { background: #e8f5e9; border-color: #a5d6a7; color: #1b5e20; }
+    .badge.wait { background: #fff4e0; border-color: #ffcc80; color: #8a4b00; }
+    .demo-note { margin-top: 14px; padding: 10px 14px; border-radius: 12px; background: #fff4e0; border: 1px dashed #ffb74d; color: #8a4b00; font-size: 12.5px; line-height: 1.45; }
+    @media (max-width: 960px) {
+      .fab-grid, .lab { grid-template-columns: minmax(0, 1fr); }
+      .phone { max-width: 340px; margin: 0 auto; }
+      .vid-tabs, .vid-ctrl { max-width: 340px; margin-left: auto; margin-right: auto; }
+      .vid-ctrl { margin-top: 12px; }
+    }
+
     /* pack */
     #pack .pack-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; margin-bottom: 36px; }
     #pack .pack-head p { color: var(--muted); max-width: 420px; line-height: 1.55; }
@@ -348,6 +424,7 @@
     <nav>
       <a class="link" href="#gamme">La gamme</a>
       <a class="link" href="#pourquoi">Notre secret</a>
+      <a class="link" href="#fabrication">Fabrication</a>
       <a class="link" href="#contact">Contact</a>
       <a class="btn sm cart-pill" href="#pack">Mon pack <span class="cart-count" id="cartCount"></span></a>
     </nav>
@@ -360,7 +437,7 @@
       <div class="hero-copy">
         <span class="eyebrow reveal">100% naturel · fait maison</span>
         <h1 class="reveal">Le goût du <span class="juicy">vrai</span> fruit.</h1>
-        <p class="reveal">Six recettes pressées à la main à Noisy-le-Grand, inspirées des saveurs d'Afrique de l'Ouest et des tropiques. Bissap, tamarin, maad, ditax, gingembre… servis bien frais.</p>
+        <p class="reveal">Huit recettes préparées à la main à Noisy-le-Grand, inspirées des saveurs d'Afrique de l'Ouest et des tropiques. Bissap, tamarin, maad, ditax, gingembre… servis bien frais.</p>
         <div class="hero-cta reveal">
           <a class="btn orange" href="#pack">Composer mon pack →</a>
           <a class="btn ghost" href="#gamme">Découvrir les saveurs</a>
@@ -377,8 +454,8 @@
 
     <div class="marquee" aria-hidden="true">
       <div class="marquee-track">
-        <span>Bissap <i>✺</i> Tamarin <i>✺</i> Mangue Maad <i>✺</i> Gingembre <i>✺</i> Ditax <i>✺</i> Pastèque Goyave <i>✺</i> 100% naturel <i>✺</i></span>
-        <span>Bissap <i>✺</i> Tamarin <i>✺</i> Mangue Maad <i>✺</i> Gingembre <i>✺</i> Ditax <i>✺</i> Pastèque Goyave <i>✺</i> 100% naturel <i>✺</i></span>
+        <span>Bissap <i>✺</i> Tamarin <i>✺</i> Mangue Maad <i>✺</i> Gingembre <i>✺</i> Ditax <i>✺</i> Bouye Corossol <i>✺</i> Pastèque Goyave <i>✺</i> 100% naturel <i>✺</i></span>
+        <span>Bissap <i>✺</i> Tamarin <i>✺</i> Mangue Maad <i>✺</i> Gingembre <i>✺</i> Ditax <i>✺</i> Bouye Corossol <i>✺</i> Pastèque Goyave <i>✺</i> 100% naturel <i>✺</i></span>
       </div>
     </div>
 
@@ -386,7 +463,7 @@
     <section id="gamme" data-stage="gamme">
       <div class="gamme-head reveal">
         <span class="eyebrow">La gamme</span>
-        <h2>6 saveurs, 0 compromis</h2>
+        <h2>8 saveurs, 0 compromis</h2>
         <p>Choisissez une saveur, faites tourner la bouteille.</p>
       </div>
       <div class="flavor-tabs reveal" id="flavorTabs" role="tablist" aria-label="Saveurs"></div>
@@ -425,7 +502,7 @@
         </div>
         <div class="stats reveal">
           <div class="stat"><b>100%</b><span>Naturel</span></div>
-          <div class="stat"><b>6</b><span>Saveurs</span></div>
+          <div class="stat"><b>8</b><span>Saveurs</span></div>
           <div class="stat"><b>33cl</b><span>Format nomade</span></div>
         </div>
       </div>
@@ -438,6 +515,60 @@
         <div class="photo-caption">
           <h3>Toute la gamme,<br>bien fraîche.</h3>
           <a class="btn orange" href="#pack">Je goûte tout →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- FABRICATION : démonstration IA -->
+    <section id="fabrication" data-stage="fabrication">
+      <div class="fab-head">
+        <span class="eyebrow reveal">Transparence · vision IA</span>
+        <h2 class="reveal">Fait maison,<br>vérifié image<br>par image.</h2>
+        <p class="reveal">Nos vidéos de production, annotées par analyse IA : chaque étape de la recette est repérée à l'image, du dosage au blender gradué jusqu'à la mise en bouteille. Pas d'usine, pas de concentré : une cuisine, des bassines inox et des gestes précis.</p>
+      </div>
+
+      <div class="fab-grid">
+        <div class="reveal">
+          <div class="vid-tabs" role="tablist">
+            <button class="active" data-vid="0">① Préparation</button>
+            <button data-vid="1">② Mise en bouteille</button>
+          </div>
+          <div class="phone">
+            <video id="fabVideo" muted playsinline preload="metadata" poster="assets/video/preparation.jpg" src="assets/video/preparation.mp4"></video>
+            <canvas id="fabCanvas" aria-hidden="true"></canvas>
+          </div>
+          <div class="vid-ctrl">
+            <button id="fabPlay" aria-label="Lecture / pause">❚❚</button>
+            <div class="vid-bar" id="fabBar"><i></i></div>
+            <span class="vid-time" id="fabTime">0:00 / 0:00</span>
+          </div>
+        </div>
+
+        <div>
+          <ol class="steps reveal" id="fabSteps"></ol>
+          <div class="ai-log reveal" id="aiLog" aria-live="off"></div>
+        </div>
+      </div>
+
+      <div class="lab">
+        <div class="lab-card reveal">
+          <span class="eyebrow">Fiche technique</span>
+          <h3>Grammage au gramme près</h3>
+          <p>Chaque saveur suit une recette fixe, pesée pour chaque fournée. Choisissez une saveur et une taille de fournée : les quantités s'ajustent automatiquement.</p>
+          <div class="lab-controls">
+            <select id="labJuice" aria-label="Saveur"></select>
+            <label>Fournée <input type="range" id="labBatch" min="1" max="30" value="10"> <b id="labBatchVal">10 L</b></label>
+          </div>
+          <div class="compo" id="labCompo"></div>
+          <p class="tol" id="labTol"></p>
+        </div>
+        <div class="lab-card reveal">
+          <span class="eyebrow">Nutrition</span>
+          <h3>Valeurs nutritionnelles</h3>
+          <p id="labNutriIntro">Calculées automatiquement à partir de la recette et des tables de composition des aliments, au format de l'étiquetage européen (règlement INCO 1169/2011).</p>
+          <table class="nutri" id="labNutri"></table>
+          <div class="badges" id="labBadges"></div>
+          <div class="demo-note" id="labDemo" hidden></div>
         </div>
       </div>
     </section>
@@ -550,6 +681,22 @@
         ingr: ['Ditax', 'Menthe', 'Citron'], emoji: '🍈🌿',
         benefits: [['🌿', 'Fruit rare', 'Le ditax est un fruit emblématique du Sénégal.'], ['🍋', 'Vif et acidulé', 'Menthe et citron pour un final frais.']],
         palette: ['#7cc242', '#c5e063', '#2d6a4f']
+      },
+      {
+        id: 'bissapblanc', name: 'Bissap Blanc', lines: ['BISSAP', 'BLANC'], sub: 'aux fruits exotiques', word: 'BLANC',
+        tag: 'Nouveau', liquid: '#d49a4c', label: '#f5e4c6', labelInk: '#c3122f', labelAccent: '#8a5a1c', bg: '#fbf1e2',
+        desc: "La version douce du bissap : fleurs d'hibiscus blanc infusées, mariées à des fruits exotiques. Doux, floral, gourmand.",
+        ingr: ['Hibiscus blanc', 'Fruits exotiques', 'Menthe'], emoji: '🌼🍍',
+        benefits: [['🌼', 'Doux et floral', "Moins acidulé que le bissap rouge."], ['🍍', 'Note exotique', 'Des fruits tropicaux pour la rondeur.']],
+        palette: ['#e7b96b', '#f6e3b4', '#a3c45a']
+      },
+      {
+        id: 'bouye', name: 'Bouye Corossol Ananas', lines: ['BOUYE', 'COROSSOL'], sub: 'ANANAS', word: 'BOUYE',
+        tag: 'Tradition', liquid: '#c9a571', label: '#f4eedc', labelInk: '#2e8b3d', labelAccent: '#d79a00', bg: '#f7f1e3',
+        desc: "Le bouye, fruit du baobab, crémeux et acidulé, avec la douceur du corossol et la vivacité de l'ananas.",
+        ingr: ['Bouye (baobab)', 'Corossol', 'Ananas'], emoji: '🌳🍍',
+        benefits: [['🌳', 'Fruit du baobab', 'Le bouye est naturellement riche en fibres et en vitamine C.'], ['🥛', 'Texture veloutée', 'Une boisson onctueuse et rassasiante.']],
+        palette: ['#e8dcc0', '#c9a571', '#7cb518']
       }
     ];
 
@@ -679,6 +826,254 @@
       btn.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
     }
     renderCart();
+
+    /* =========================================================
+       FABRICATION — AI-annotated videos, recipe sheet, nutrition
+       ========================================================= */
+    // Once the juices have been analysed by a lab, set demo:false and lab:'<report reference>'.
+    const NUTRITION = { demo: true, lab: '' };
+
+    // Reference values per 100 g: [kcal, fat, carbs, sugars, protein, salt]. est = estimated (few public data).
+    const FOODS = {
+      eau: { n: 'Eau', v: [0, 0, 0, 0, 0, 0] },
+      infusion: { n: "Infusion d'hibiscus", v: [2, 0, .4, 0, 0, 0] },
+      infusionb: { n: "Infusion d'hibiscus blanc", v: [2, 0, .4, 0, 0, 0] },
+      sucre: { n: 'Sucre de canne', v: [400, 0, 100, 100, 0, 0] },
+      rouges: { n: 'Fruits rouges', v: [45, .3, 8, 6, 1, 0] },
+      tamarin: { n: 'Pulpe de tamarin', v: [239, .6, 57, 57, 2.8, .07] },
+      litchi: { n: 'Litchi', v: [66, .4, 16.5, 15.2, .8, 0] },
+      ananas: { n: 'Ananas', v: [52, .2, 12, 10, .5, 0] },
+      mangue: { n: 'Mangue', v: [62, .3, 14, 13.5, .6, 0] },
+      maad: { n: 'Pulpe de maad', v: [80, .5, 18, 12, 1, 0], est: true },
+      passion: { n: 'Fruit de la passion', v: [97, .7, 13, 11, 2.2, .07] },
+      pasteque: { n: 'Pastèque', v: [30, .2, 7.5, 6.2, .6, 0] },
+      goyave: { n: 'Goyave', v: [68, 1, 14, 9, 2.6, 0] },
+      citron: { n: 'Jus de citron', v: [24, .2, 8, 2.5, .4, 0] },
+      menthe: { n: 'Menthe fraîche', v: [44, .7, 8, 0, 3.3, .08] },
+      gingembre: { n: 'Gingembre frais', v: [80, .8, 18, 1.7, 1.8, .03] },
+      ditax: { n: 'Pulpe de ditax', v: [110, .5, 25, 15, 2, 0], est: true },
+      bouye: { n: 'Pulpe de bouye', v: [250, .3, 75, 23, 2.3, .01], est: true },
+      corossol: { n: 'Corossol', v: [66, .3, 16.8, 13.5, 1, .03] }
+    };
+    // Grams per 1 000 g of juice — EXAMPLES, replace with the real recipes.
+    const RECIPES = {
+      bissap: { infusion: 780, rouges: 100, sucre: 110, menthe: 10 },
+      tamarin: { eau: 450, tamarin: 180, litchi: 150, ananas: 130, sucre: 90 },
+      maad: { mangue: 380, eau: 290, maad: 150, passion: 100, sucre: 80 },
+      pasteque: { pasteque: 520, goyave: 200, eau: 170, sucre: 60, citron: 40, menthe: 10 },
+      gingembre: { ananas: 380, eau: 340, passion: 100, sucre: 90, gingembre: 60, citron: 30 },
+      ditax: { eau: 560, ditax: 250, sucre: 115, citron: 60, menthe: 15 },
+      bissapblanc: { infusionb: 700, sucre: 110, ananas: 100, mangue: 80, menthe: 10 },
+      bouye: { eau: 400, corossol: 180, bouye: 160, ananas: 150, sucre: 80 }
+    };
+
+    const STEPS = [
+      ['Dosage', 'Fruits frais mesurés au blender gradué'],
+      ['Mixage', 'Pulpe fraîche travaillée à la main'],
+      ['Filtration', 'Passage au tamis fin'],
+      ['Homogénéisation', 'Fouettée en bassine inox'],
+      ['Mise en bouteille', "Remplissage à l'entonnoir inox"],
+      ['Contrôle qualité', 'Gants, étiquetage, inspection visuelle']
+    ];
+    // [start, end, step, label, box [x, y, w, h] normalised to the 9:16 frame, juice id]
+    const VIDEOS = [
+      { src: 'assets/video/preparation.mp4', poster: 'assets/video/preparation.jpg', seg: [
+        [0, 1, -1, 'Gamme complète', [.03, .32, .94, .36]],
+        [1, 5, 0, 'Blender gradué · volume lu sur la graduation', [.06, .03, .88, .8]],
+        [5, 8, 1, 'Pulpe de mangue fraîche', [.1, .12, .8, .72]],
+        [8, 12, 2, 'Tamis fin · filtration de la pulpe', [.06, .22, .88, .5]],
+        [12, 16, 3, 'Fouet · homogénéisation', [.06, .18, .88, .62]],
+        [16, 24, 3, 'Bases prêtes · bassines inox', [.04, .4, .92, .56]],
+        [24, 28, 5, 'Port de gants · gamme alignée', [.04, .3, .92, .4]]
+      ] },
+      { src: 'assets/video/embouteillage.mp4', poster: 'assets/video/embouteillage.jpg', seg: [
+        [0, 3, 4, 'Ditax Menthe Citron · remplissage', [.04, .02, .5, .95], 'ditax'],
+        [4, 7, 4, 'Tamarin Litchi Ananas · remplissage', [.12, .02, .58, .95], 'tamarin'],
+        [7, 10, 4, 'Bissap Rouge · remplissage', [.15, .02, .62, .95], 'bissap'],
+        [11, 14, 4, 'Mangue Maad Passion · remplissage', [.12, .08, .6, .9], 'maad'],
+        [14, 17, 4, 'Bouye Corossol Ananas · remplissage', [.3, .18, .58, .78], 'bouye'],
+        [18, 24, 4, 'Bissap Blanc · remplissage', [.15, .02, .62, .95], 'bissapblanc'],
+        [25, 30, 4, 'Gingembre Ananas Passion · remplissage', [.32, .12, .6, .84], 'gingembre'],
+        [31, 44, 5, 'Contrôle visuel · port de gants', [.02, .3, .96, .68]]
+      ] }
+    ];
+
+    const fabVideo = document.getElementById('fabVideo');
+    const fabCanvas = document.getElementById('fabCanvas');
+    const fctx = fabCanvas.getContext('2d');
+    const fabSteps = document.getElementById('fabSteps');
+    const aiLog = document.getElementById('aiLog');
+    const vidTabs = [...document.querySelectorAll('.vid-tabs button')];
+    let vidIdx = 0, curSeg = null, fabVisible = false, wantPlay = !reduced;
+    const seenSteps = new Set();
+    const seenJuices = new Set();
+
+    fabSteps.innerHTML = STEPS.map(([t, d]) => `<li><span><b>${t}</b><small>${d}</small></span><span class="chk">en attente</span></li>`).join('');
+    const stepEls = [...fabSteps.children];
+    const mmss = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+
+    function log(html) {
+      const d = document.createElement('div'); d.innerHTML = html; aiLog.appendChild(d);
+      while (aiLog.children.length > 7) aiLog.firstChild.remove();
+    }
+    log('<span class="t">[init]</span> Vision IA prête · analyse des vidéos de production');
+
+    function loadVideo(i, play = true) {
+      vidIdx = i; curSeg = null;
+      vidTabs.forEach((b, k) => b.classList.toggle('active', k === i));
+      fabVideo.poster = VIDEOS[i].poster; fabVideo.src = VIDEOS[i].src;
+      log(`<span class="t">[source]</span> ${i ? 'Vidéo 2 · mise en bouteille' : 'Vidéo 1 · préparation'}`);
+      if (play && fabVisible) fabVideo.play().catch(() => {});
+    }
+    vidTabs.forEach((b, k) => b.onclick = () => { wantPlay = true; loadVideo(k); });
+    fabVideo.addEventListener('ended', () => loadVideo((vidIdx + 1) % VIDEOS.length));
+    const playBtn = document.getElementById('fabPlay');
+    playBtn.onclick = () => { if (fabVideo.paused) { wantPlay = true; fabVideo.play().catch(() => {}); } else { wantPlay = false; fabVideo.pause(); } };
+    fabVideo.addEventListener('play', () => playBtn.textContent = '❚❚');
+    fabVideo.addEventListener('pause', () => playBtn.textContent = '▶');
+    document.getElementById('fabBar').onclick = e => {
+      const r = e.currentTarget.getBoundingClientRect();
+      if (fabVideo.duration) fabVideo.currentTime = (e.clientX - r.left) / r.width * fabVideo.duration;
+    };
+    stepEls.forEach((li, k) => li.onclick = () => {
+      const v = VIDEOS.findIndex(v => v.seg.some(s => s[2] === k));
+      const seg = VIDEOS[v].seg.find(s => s[2] === k);
+      const seek = () => { fabVideo.currentTime = seg[0] + .05; fabVideo.play().catch(() => {}); };
+      wantPlay = true;
+      if (v !== vidIdx) { loadVideo(v, false); fabVideo.addEventListener('loadedmetadata', seek, { once: true }); } else seek();
+    });
+
+    new IntersectionObserver(([e]) => {
+      fabVisible = e.isIntersecting;
+      if (fabVisible && wantPlay) fabVideo.play().catch(() => {});
+      if (!fabVisible) fabVideo.pause();
+    }, { threshold: .35 }).observe(fabVideo);
+
+    function onSegment(seg) {
+      const [s, , step, label, , juice] = seg;
+      log(`<span class="t">[${mmss(s)}]</span> ${label}`);
+      if (step >= 0 && !seenSteps.has(step)) { seenSteps.add(step); log(`<span class="t">[✓]</span> Étape ${step + 1}/6 observée · ${STEPS[step][0]} (${seenSteps.size}/6)`); }
+      if (juice && !seenJuices.has(juice)) {
+        seenJuices.add(juice);
+        log(`<span class="t">[lot]</span> Saveur identifiée : ${JUICES.find(j => j.id === juice).name} (${seenJuices.size}/${JUICES.length})`);
+        labSelect.value = juice; renderLab();
+      }
+      stepEls.forEach((li, k) => {
+        li.classList.toggle('live', k === step);
+        li.classList.toggle('done', seenSteps.has(k) && k !== step);
+        li.querySelector('.chk').textContent = k === step ? 'en cours' : seenSteps.has(k) ? '✓ vérifié' : 'en attente';
+      });
+    }
+
+    // overlay
+    const box = { x: .1, y: .1, w: .8, h: .8, a: 0 };
+    function drawOverlay(now) {
+      requestAnimationFrame(drawOverlay);
+      if (!fabVisible) return;
+      const dpr = Math.min(devicePixelRatio, 2);
+      const W = fabCanvas.clientWidth, H = fabCanvas.clientHeight;
+      if (fabCanvas.width !== W * dpr) { fabCanvas.width = W * dpr; fabCanvas.height = H * dpr; }
+      fctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      fctx.clearRect(0, 0, W, H);
+
+      const t = fabVideo.currentTime || 0, dur = fabVideo.duration || 0;
+      document.querySelector('#fabBar i').style.width = dur ? (t / dur * 100) + '%' : 0;
+      document.getElementById('fabTime').textContent = `${mmss(t)} / ${mmss(dur)}`;
+
+      const seg = VIDEOS[vidIdx].seg.find(s => t >= s[0] && t < s[1]) || null;
+      if (seg !== curSeg) { curSeg = seg; if (seg) onSegment(seg); }
+      const k = reduced ? 1 : .12;
+      if (seg) { const [x, y, w, h] = seg[4]; box.x += (x - box.x) * k; box.y += (y - box.y) * k; box.w += (w - box.w) * k; box.h += (h - box.h) * k; }
+      box.a += ((seg ? 1 : 0) - box.a) * .15;
+
+      // scan line
+      if (!reduced) {
+        const sy = ((now / 2600) % 1) * H;
+        const g = fctx.createLinearGradient(0, sy - 40, 0, sy);
+        g.addColorStop(0, 'rgba(255,157,59,0)'); g.addColorStop(1, 'rgba(255,157,59,.35)');
+        fctx.fillStyle = g; fctx.fillRect(0, sy - 40, W, 40);
+        fctx.fillStyle = 'rgba(255,190,120,.9)'; fctx.fillRect(0, sy, W, 1.5);
+      }
+
+      // detection box
+      if (box.a > .02) {
+        const x = box.x * W, y = box.y * H, w = box.w * W, h = box.h * H, c = 18;
+        fctx.globalAlpha = box.a;
+        fctx.strokeStyle = 'rgba(255,179,71,.45)'; fctx.lineWidth = 1; fctx.strokeRect(x, y, w, h);
+        fctx.strokeStyle = '#ffb347'; fctx.lineWidth = 3; fctx.lineCap = 'round';
+        fctx.beginPath();
+        [[x, y, 1, 1], [x + w, y, -1, 1], [x, y + h, 1, -1], [x + w, y + h, -1, -1]].forEach(([px, py, dx, dy]) => {
+          fctx.moveTo(px + dx * c, py); fctx.lineTo(px, py); fctx.lineTo(px, py + dy * c);
+        });
+        fctx.stroke();
+        if (curSeg) {
+          const txt = curSeg[3];
+          fctx.font = '700 11px Inter, sans-serif';
+          const tw = Math.min(fctx.measureText(txt).width + 22, W - 16);
+          const lx = Math.min(Math.max(8, x), W - tw - 8), ly = y > 64 ? y - 28 : y + 8;
+          fctx.fillStyle = 'rgba(27,20,16,.86)'; fctx.beginPath(); fctx.roundRect(lx, ly, tw, 22, 11); fctx.fill();
+          fctx.fillStyle = '#ff9d3b'; fctx.beginPath(); fctx.arc(lx + 10, ly + 11, 3, 0, 7); fctx.fill();
+          fctx.fillStyle = '#fff'; fctx.fillText(txt, lx + 17, ly + 15, tw - 22);
+        }
+        fctx.globalAlpha = 1;
+      }
+
+      // HUD
+      fctx.font = '800 10px Inter, sans-serif';
+      fctx.fillStyle = 'rgba(0,0,0,.55)'; fctx.beginPath(); fctx.roundRect(10, 10, 132, 22, 11); fctx.fill();
+      fctx.fillStyle = (now % 1000 < 600) ? '#ff3b3b' : 'rgba(255,59,59,.3)'; fctx.beginPath(); fctx.arc(22, 21, 4, 0, 7); fctx.fill();
+      fctx.fillStyle = '#fff'; fctx.fillText('VISION IA · ANALYSE', 31, 25);
+      if (curSeg && curSeg[2] >= 0) {
+        const st = `ÉTAPE ${curSeg[2] + 1}/6 · ${STEPS[curSeg[2]][0].toUpperCase()}`;
+        const tw = fctx.measureText(st).width + 20;
+        fctx.fillStyle = 'rgba(255,122,0,.92)'; fctx.beginPath(); fctx.roundRect((W - tw) / 2, H - 34, tw, 22, 11); fctx.fill();
+        fctx.fillStyle = '#fff'; fctx.fillText(st, (W - tw) / 2 + 10, H - 19);
+      }
+    }
+    requestAnimationFrame(drawOverlay);
+
+    // recipe & nutrition
+    const labSelect = document.getElementById('labJuice');
+    const labBatch = document.getElementById('labBatch');
+    labSelect.innerHTML = JUICES.map(j => `<option value="${j.id}">${j.name}</option>`).join('');
+    const num = (v, d = 1) => v.toFixed(d).replace('.', ',');
+    function renderLab() {
+      const j = JUICES.find(x => x.id === labSelect.value), rec = RECIPES[j.id], L = +labBatch.value;
+      document.getElementById('labBatchVal').textContent = L + ' L';
+      const max = Math.max(...Object.values(rec));
+      let est = false;
+      document.getElementById('labCompo').innerHTML = Object.entries(rec).map(([k, g]) => {
+        const f = FOODS[k]; if (f.est) est = true;
+        const q = g * L; const qs = q >= 1000 ? num(q / 1000, 2) + ' kg' : Math.round(q) + ' g';
+        return `<div class="compo-row" style="--c:${j.liquid}"><span>${f.n}${f.est ? ' *' : ''}</span><b>${qs}</b><span class="bar"><i style="width:${g / max * 100}%"></i></span></div>`;
+      }).join('');
+      document.getElementById('labTol').textContent = `Pour ${L} L : ${num(L, 0)} kg de préparation ≈ ${Math.floor(L * 1000 / 330)} bouteilles de 33 cl.` + (est ? ' * valeur de référence estimée (peu de données publiques).' : '');
+
+      // nutrition per 100 mL (density taken as 1)
+      const tot = [0, 0, 0, 0, 0, 0];
+      Object.entries(rec).forEach(([k, g]) => FOODS[k].v.forEach((v, i) => tot[i] += v * g / 1000));
+      const kcal = tot[0], b = 3.3;
+      const rows = [
+        ['Énergie', `${Math.round(kcal * 4.184)} kJ / ${Math.round(kcal)} kcal`, `${Math.round(kcal * 4.184 * b)} kJ / ${Math.round(kcal * b)} kcal`],
+        ['Matières grasses', num(tot[1]) + ' g', num(tot[1] * b) + ' g'],
+        ['dont acides gras saturés', '< 0,1 g', '< 0,1 g', 1],
+        ['Glucides', num(tot[2]) + ' g', num(tot[2] * b) + ' g'],
+        ['dont sucres', num(tot[3]) + ' g', num(tot[3] * b) + ' g', 1],
+        ['Protéines', num(tot[4]) + ' g', num(tot[4] * b) + ' g'],
+        ['Sel', num(tot[5], 2) + ' g', num(tot[5] * b, 2) + ' g']
+      ];
+      document.getElementById('labNutri').innerHTML =
+        `<thead><tr><th>${j.name}</th><th>pour 100 mL</th><th>par bouteille 33 cl</th></tr></thead><tbody>` +
+        rows.map(([n, a, c, sub]) => `<tr><td class="${sub ? 'sub' : ''}">${n}</td><td>${a}</td><td>${c}</td></tr>`).join('') + '</tbody>';
+      document.getElementById('labBadges').innerHTML =
+        `<span class="badge ok">✓ Fait maison · vidéo à l'appui</span><span class="badge ok">✓ Recette pesée</span>` +
+        (NUTRITION.lab ? `<span class="badge ok">✓ Analysé en laboratoire · réf. ${NUTRITION.lab}</span>` : `<span class="badge wait">⏳ Analyse laboratoire à venir</span>`);
+      const note = document.getElementById('labDemo');
+      note.hidden = !NUTRITION.demo;
+      note.textContent = 'Données de démonstration : les grammages et les valeurs sont des exemples calculés. Remplacez-les par vos recettes réelles avant la mise en ligne.';
+    }
+    labSelect.onchange = renderLab; labBatch.oninput = renderLab;
+    renderLab();
 
     /* =========================================================
        GSAP: reveals, header, photo parallax
@@ -923,6 +1318,7 @@
         gamme:    () => ({ a: 1, fx: 0, fy: 0, s: 1, ry: 0, rz: 0 }),
         pourquoi: () => isMobile() ? { a: 0, fx: 0, fy: 0.42, s: 0.42, ry: -0.6, rz: 0.15 } : { a: 0, fx: -0.48, fy: 0, s: 1.05, ry: -0.7, rz: 0.18 },
         photo:    () => ({ a: 0, fx: isMobile() ? 0 : -0.5, fy: 1.8, s: 0.8, ry: -1, rz: 0.3 }),
+        fabrication: () => ({ a: 0, fx: 0.8, fy: -2, s: 0.6, ry: 1, rz: -0.3 }),
         pack:     () => ({ a: 0, fx: 0.8, fy: -2, s: 0.6, ry: 1, rz: -0.3 }),
         contact:  () => ({ a: 0, fx: 0.8, fy: -2, s: 0.6, ry: 1, rz: -0.3 })
       };
