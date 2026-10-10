@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Les Secrets Culinaires · Jus</title>
+  <meta name="description" content="Jus artisanaux 100% naturels pressés à Noisy-le-Grand : Bissap, Tamarin, Mangue Maad, Gingembre, Ditax… Commandez votre pack en un clic.">
+  <meta name="theme-color" content="#ff7a00">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #fff4e6;
+      --ink: #1b1410;
+      --muted: #6b5d52;
+      --accent: #ff7a00;
+      --juice: #f7a21b;
+      --card: rgba(255, 255, 255, .62);
+      --line: rgba(27, 20, 16, .12);
+      --radius: 22px;
+      --display: "Archivo Black", Impact, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      transition: background-color .9s ease;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    img { max-width: 100%; display: block; }
+    a { color: inherit; }
+    button { font: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+
+    /* ---------- 3D stage ---------- */
+    #stage {
+      position: fixed; inset: 0; z-index: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+    }
+    .glow {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(40vmax 40vmax at 70% 45%, color-mix(in srgb, var(--juice) 45%, transparent), transparent 70%),
+        radial-gradient(30vmax 30vmax at 10% 90%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 70%);
+      transition: background .9s ease;
+    }
+    main, header, footer { position: relative; z-index: 1; }
+
+    /* ---------- loader ---------- */
+    #loader {
+      position: fixed; inset: 0; z-index: 100;
+      display: grid; place-items: center;
+      background: #1b1410; color: #fff;
+      transition: opacity .7s ease, visibility .7s;
+    }
+    #loader.done { opacity: 0; visibility: hidden; }
+    .loader-bottle {
+      width: 64px; height: 110px; border: 3px solid #fff; border-radius: 16px 16px 14px 14px;
+      position: relative; overflow: hidden; margin: 0 auto 18px;
+    }
+    .loader-bottle::before {
+      content: ""; position: absolute; top: -16px; left: 50%; width: 30px; height: 14px;
+      transform: translateX(-50%); background: var(--accent); border-radius: 4px;
+    }
+    .loader-fill {
+      position: absolute; left: 0; right: 0; bottom: 0; height: 0%;
+      background: linear-gradient(#ffb347, #ff7a00); transition: height .3s ease;
+    }
+    .loader-text { font-family: var(--display); letter-spacing: .08em; text-align: center; font-size: 14px; }
+
+    /* ---------- nav ---------- */
+    header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px clamp(16px, 4vw, 48px);
+      transition: background .4s, backdrop-filter .4s, box-shadow .4s;
+    }
+    header.scrolled {
+      background: color-mix(in srgb, var(--bg) 70%, transparent);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 1px 0 var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 800; line-height: 1; }
+    .brand-mark {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--accent); color: #fff; display: grid; place-items: center;
+      font-family: var(--display); font-size: 15px;
+    }
+    .brand small { display: block; font-weight: 500; color: var(--muted); font-size: 11px; margin-top: 3px; letter-spacing: .04em; }
+    nav { display: flex; gap: 28px; align-items: center; }
+    nav a { text-decoration: none; font-weight: 600; font-size: 14px; opacity: .8; }
+    nav a:hover { opacity: 1; }
+    .btn {
+      white-space: nowrap;
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 14px 24px; border-radius: 999px;
+      background: var(--ink); color: #fff; font-weight: 700; text-decoration: none; font-size: 15px;
+      transition: transform .25s ease, box-shadow .25s ease, background .25s;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px -10px rgba(0,0,0,.45); }
+    .btn.orange { background: var(--accent); }
+    .btn.ghost { background: transparent; color: var(--ink); border: 2px solid var(--ink); }
+    .btn.sm { padding: 10px 18px; font-size: 14px; }
+    .cart-pill { position: relative; }
+    .cart-count {
+      position: absolute; top: -6px; right: -6px; min-width: 22px; height: 22px; padding: 0 6px;
+      border-radius: 999px; background: var(--accent); color: #fff; font-size: 12px;
+      display: grid; place-items: center; border: 2px solid var(--bg);
+    }
+    .cart-count:empty { display: none; }
+
+    /* ---------- sections ---------- */
+    section { min-height: 100vh; padding: 120px clamp(16px, 6vw, 96px) 80px; position: relative; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--accent);
+    }
+    .eyebrow::before { content: ""; width: 28px; height: 2px; background: currentColor; }
+    h1, h2, h3 { font-family: var(--display); font-weight: 400; line-height: .92; letter-spacing: -.01em; text-transform: uppercase; }
+    h2 { font-size: clamp(40px, 6.5vw, 92px); margin: 14px 0 22px; }
+
+    /* hero */
+    #hero { display: flex; align-items: center; }
+    .hero-copy { max-width: 640px; }
+    .hero-copy h1 { font-size: clamp(52px, 7.6vw, 118px); margin: 18px 0 24px; }
+    .hero-copy h1 .juicy { color: var(--juice); transition: color .9s ease; -webkit-text-stroke: 2px var(--ink); }
+    .hero-copy p { font-size: clamp(16px, 1.4vw, 19px); color: var(--muted); max-width: 470px; line-height: 1.55; }
+    .hero-cta { display: flex; gap: 12px; margin-top: 32px; flex-wrap: wrap; }
+    .hero-flavor {
+      position: absolute; right: clamp(16px, 6vw, 96px); bottom: 70px;
+      text-align: right; max-width: 320px;
+    }
+    .hero-flavor .now { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+    .hero-flavor .name { font-family: var(--display); font-size: 26px; line-height: 1; margin-top: 6px; text-transform: uppercase; }
+    .dots { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
+    .dots button {
+      width: 14px; height: 14px; border-radius: 50%; background: var(--c);
+      outline: 2px solid transparent; outline-offset: 3px; transition: outline-color .3s, transform .3s;
+      pointer-events: auto;
+    }
+    .dots button.active { outline-color: var(--ink); transform: scale(1.15); }
+    .bg-word {
+      position: absolute; z-index: -1; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      font-family: var(--display); font-size: 26vw; line-height: 1; white-space: nowrap;
+      color: transparent; -webkit-text-stroke: 2px color-mix(in srgb, var(--ink) 9%, transparent);
+      pointer-events: none; user-select: none;
+    }
+    .scroll-hint {
+      position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%);
+      font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); font-weight: 700;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .scroll-hint span { width: 2px; height: 34px; background: var(--ink); opacity: .4; animation: drip 1.8s ease-in-out infinite; transform-origin: top; }
+    @keyframes drip { 0% { transform: scaleY(0); } 50% { transform: scaleY(1); } 100% { transform: scaleY(0); transform-origin: bottom; } }
+
+    /* marquee */
+    .marquee {
+      position: relative; z-index: 1; overflow: hidden;
+      background: var(--ink); color: #fff; padding: 18px 0; transform: rotate(-2deg) scale(1.04);
+    }
+    .marquee-track { display: flex; gap: 40px; width: max-content; animation: marquee 28s linear infinite; }
+    .marquee-track span { font-family: var(--display); font-size: clamp(20px, 2.6vw, 34px); text-transform: uppercase; white-space: nowrap; }
+    .marquee-track i { color: var(--accent); font-style: normal; }
+    @keyframes marquee { to { transform: translateX(-50%); } }
+
+    /* gamme */
+    #gamme h2 { font-size: clamp(36px, 5vw, 72px); }
+    #gamme { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; align-items: center; }
+    .gamme-head { grid-column: 1 / -1; text-align: center; }
+    .gamme-head h2 { margin-bottom: 8px; }
+    .gamme-head p { color: var(--muted); }
+    .flavor-tabs { grid-column: 1 / -1; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+    .flavor-tab {
+      display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px;
+      background: var(--card); border: 1px solid var(--line); font-weight: 600; font-size: 14px;
+      backdrop-filter: blur(8px); transition: background .3s, color .3s, transform .3s;
+    }
+    .flavor-tab::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--c); }
+    .flavor-tab:hover { transform: translateY(-2px); }
+    .flavor-tab.active { background: var(--ink); color: #fff; }
+    .info-panel { background: var(--card); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid var(--line); border-radius: var(--radius); padding: 30px; }
+    .info-panel h3 { font-size: clamp(30px, 3vw, 44px); margin: 10px 0 14px; }
+    .info-panel p { color: var(--muted); line-height: 1.6; }
+    .ingredients { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0; }
+    .ingredients span { padding: 6px 12px; border-radius: 999px; background: color-mix(in srgb, var(--juice) 25%, white); font-size: 13px; font-weight: 600; }
+    .price-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
+    .price { font-family: var(--display); font-size: 34px; }
+    .price small { font-family: Inter, sans-serif; font-size: 13px; color: var(--muted); font-weight: 500; }
+    .bottle-space { min-height: 62vh; position: relative; }
+    .arrows { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); display: flex; gap: 12px; }
+    .arrows button {
+      width: 54px; height: 54px; border-radius: 50%; background: var(--card); border: 1px solid var(--line);
+      display: grid; place-items: center; backdrop-filter: blur(8px); transition: transform .25s, background .25s;
+    }
+    .arrows button:hover { transform: scale(1.08); background: #fff; }
+    .drag-hint { position: absolute; top: 0; left: 50%; transform: translateX(-50%); font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+    .benefits { list-style: none; display: grid; gap: 12px; }
+    .benefits li { display: flex; gap: 14px; align-items: flex-start; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px 18px; backdrop-filter: blur(10px); }
+    .benefits b { display: block; margin-bottom: 2px; }
+    .benefits small { color: var(--muted); line-height: 1.5; }
+    .benefits .ico { font-size: 24px; line-height: 1; }
+
+    /* why */
+    #pourquoi { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+    #pourquoi .col { grid-column: 2; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 30px; }
+    .stat { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; backdrop-filter: blur(10px); }
+    .stat b { font-family: var(--display); font-size: 40px; display: block; color: var(--accent); }
+    .stat span { font-size: 13px; color: var(--muted); font-weight: 600; }
+    .why-list { display: grid; gap: 18px; margin-top: 28px; }
+    .why-list div { display: grid; grid-template-columns: 48px 1fr; gap: 14px; align-items: start; }
+    .why-list .n { font-family: var(--display); font-size: 26px; color: var(--accent); }
+    .why-list p { color: var(--muted); line-height: 1.55; }
+
+    /* photo */
+    #photo { min-height: auto; padding-top: 60px; }
+    .photo-wrap {
+      position: relative; border-radius: 32px; overflow: hidden; height: min(80vh, 760px);
+      box-shadow: 0 40px 80px -30px rgba(0,0,0,.45);
+    }
+    .photo-wrap img { width: 100%; height: 120%; object-fit: cover; will-change: transform; }
+    .photo-caption {
+      position: absolute; left: 24px; bottom: 24px; right: 24px;
+      display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap;
+      color: #fff; text-shadow: 0 2px 20px rgba(0,0,0,.5);
+    }
+    .photo-caption h3 { font-size: clamp(30px, 5vw, 70px); }
+
+    /* fabrication (AI process demo) */
+    #fabrication { min-height: auto; }
+    .fab-head { max-width: 760px; margin-bottom: 40px; }
+    .fab-head p { color: var(--muted); line-height: 1.6; }
+    .fab-grid { display: grid; grid-template-columns: minmax(260px, 380px) 1fr; gap: 32px; align-items: start; }
+    .phone {
+      position: relative; aspect-ratio: 9 / 16; border-radius: 34px; overflow: hidden;
+      background: #000; border: 8px solid #1b1410; box-shadow: 0 40px 80px -30px rgba(0,0,0,.6);
+    }
+    .phone video, .phone canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .phone canvas { pointer-events: none; }
+    .vid-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+    .vid-tabs button { flex: 1; padding: 10px 12px; border-radius: 999px; font-weight: 700; font-size: 13px; background: var(--card); border: 1px solid var(--line); }
+    .vid-tabs button.active { background: var(--ink); color: #fff; }
+    .vid-ctrl { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+    .vid-ctrl button { width: 40px; height: 40px; border-radius: 50%; background: var(--ink); color: #fff; flex: none; }
+    .vid-bar { flex: 1; height: 6px; border-radius: 3px; background: var(--line); position: relative; overflow: hidden; cursor: pointer; }
+    .vid-bar i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--accent); }
+    .vid-time { font-variant-numeric: tabular-nums; font-size: 12px; color: var(--muted); font-weight: 600; min-width: 74px; text-align: right; }
+
+    .steps { list-style: none; display: grid; gap: 10px; counter-reset: st; }
+    .steps li {
+      counter-increment: st; display: grid; grid-template-columns: 42px 1fr auto; gap: 14px; align-items: center;
+      padding: 14px 16px; border-radius: 16px; background: var(--card); border: 1px solid var(--line);
+      backdrop-filter: blur(10px); transition: background .4s, color .4s, transform .4s; cursor: pointer;
+    }
+    .steps li::before {
+      content: counter(st, decimal-leading-zero); font-family: var(--display); font-size: 18px; color: var(--accent);
+      width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; background: #fff;
+    }
+    .steps b { display: block; font-size: 15px; }
+    .steps small { color: var(--muted); font-size: 13px; line-height: 1.4; }
+    .steps .chk { font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 999px; background: var(--line); color: var(--muted); white-space: nowrap; }
+    .steps li.done .chk { background: #2e7d32; color: #fff; }
+    .steps li.live { background: var(--ink); color: #fff; transform: translateX(6px); }
+    .steps li.live small { color: rgba(255,255,255,.7); }
+    .steps li.live .chk { background: var(--accent); color: #fff; }
+    .ai-log {
+      margin-top: 16px; background: #120d0a; color: #b7f5c4; border-radius: 16px; padding: 14px 16px;
+      font: 500 12.5px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; height: 156px; overflow: hidden;
+      display: flex; flex-direction: column; justify-content: flex-end;
+    }
+    .ai-log div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ai-log .t { color: #ff9d3b; }
+
+    .lab { margin-top: 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .lab-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+    .lab-card h3 { font-size: 26px; margin: 12px 0 8px; }
+    .lab-card > p { color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .lab-controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 18px 0; }
+    .lab-controls select { font: inherit; font-weight: 700; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line); background: #fff; color: var(--ink); }
+    .lab-controls label { font-size: 13px; font-weight: 700; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+    .lab-controls input[type=range] { accent-color: var(--accent); width: 140px; }
+    .compo { display: grid; gap: 10px; }
+    .compo-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-size: 14px; }
+    .compo-row b { font-variant-numeric: tabular-nums; }
+    .compo-row .bar { grid-column: 1 / -1; height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+    .compo-row .bar i { display: block; height: 100%; background: var(--c, var(--accent)); border-radius: 4px; transition: width .8s cubic-bezier(.2,.8,.2,1); }
+    .tol { margin-top: 14px; font-size: 13px; color: var(--muted); }
+    .nutri { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 14px; }
+    .nutri th, .nutri td { padding: 9px 4px; border-bottom: 1px solid var(--line); text-align: right; font-variant-numeric: tabular-nums; }
+    .nutri th:first-child, .nutri td:first-child { text-align: left; }
+    .nutri thead th { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+    .nutri td.sub { padding-left: 16px; color: var(--muted); }
+    .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .badge { font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 999px; background: #fff; border: 1px solid var(--line); }
+    .badge.ok { background: #e8f5e9; border-color: #a5d6a7; color: #1b5e20; }
+    .badge.wait { background: #fff4e0; border-color: #ffcc80; color: #8a4b00; }
+    .demo-note { margin-top: 14px; padding: 10px 14px; border-radius: 12px; background: #fff4e0; border: 1px dashed #ffb74d; color: #8a4b00; font-size: 12.5px; line-height: 1.45; }
+    @media (max-width: 960px) {
+      .fab-grid, .lab { grid-template-columns: minmax(0, 1fr); }
+      .phone { max-width: 340px; margin: 0 auto; }
+      .vid-tabs, .vid-ctrl { max-width: 340px; margin-left: auto; margin-right: auto; }
+      .vid-ctrl { margin-top: 12px; }
+    }
+
+    /* pack */
+    #pack .pack-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; margin-bottom: 36px; }
+    #pack .pack-head p { color: var(--muted); max-width: 420px; line-height: 1.55; }
+    .pack-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+    .card {
+      position: relative; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 22px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      transform-style: preserve-3d; transition: transform .2s ease-out, box-shadow .3s;
+      overflow: hidden;
+    }
+    .card:hover { box-shadow: 0 30px 60px -30px color-mix(in srgb, var(--c) 80%, black); }
+    .card::after {
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(400px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,.55), transparent 40%);
+      opacity: 0; transition: opacity .3s;
+    }
+    .card:hover::after { opacity: 1; }
+    .mini {
+      width: 64px; height: 108px; margin: 6px auto 16px; position: relative;
+      border-radius: 14px 14px 12px 12px; background: linear-gradient(90deg, rgba(255,255,255,.55), rgba(255,255,255,.1) 40%, rgba(255,255,255,.35));
+      border: 2px solid rgba(0,0,0,.08); transform: translateZ(40px);
+    }
+    .mini::before { content: ""; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 30px; height: 14px; background: #ff7a00; border-radius: 4px 4px 2px 2px; }
+    .mini::after { content: ""; position: absolute; left: 3px; right: 3px; bottom: 3px; height: 82%; background: var(--c); border-radius: 10px; opacity: .92; }
+    .mini i { position: absolute; z-index: 1; left: 8px; right: 8px; top: 34%; height: 40%; border-radius: 6px; background: var(--label); box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+    .card h3 { font-size: 20px; text-align: center; line-height: 1.05; transform: translateZ(30px); }
+    .card .sub { text-align: center; font-size: 13px; color: var(--muted); margin-top: 6px; min-height: 18px; }
+    .qty { display: flex; align-items: center; justify-content: space-between; margin-top: 18px; transform: translateZ(20px); }
+    .qty .p { font-weight: 800; font-size: 18px; }
+    .stepper { display: flex; align-items: center; gap: 4px; background: #fff; border-radius: 999px; padding: 4px; border: 1px solid var(--line); }
+    .stepper button { width: 34px; height: 34px; border-radius: 50%; font-size: 18px; font-weight: 700; }
+    .stepper button:hover { background: var(--bg); }
+    .stepper output { min-width: 24px; text-align: center; font-weight: 800; }
+
+    .summary {
+      position: sticky; bottom: 16px; z-index: 5; margin-top: 28px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+      background: var(--ink); color: #fff; padding: 18px 22px; border-radius: 22px;
+      box-shadow: 0 30px 60px -20px rgba(0,0,0,.5);
+    }
+    .summary .total { font-family: var(--display); font-size: 30px; }
+    .summary .detail { font-size: 13px; opacity: .7; margin-top: 2px; }
+    .summary .promo { color: #ffb347; font-weight: 700; font-size: 13px; }
+    .summary .btn.orange[aria-disabled="true"] { opacity: .45; pointer-events: none; }
+
+    /* contact / footer */
+    #contact { min-height: auto; display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; align-items: start; }
+    .contact-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px; backdrop-filter: blur(12px); display: grid; gap: 18px; }
+    .contact-card a { text-decoration: none; font-weight: 700; font-size: 20px; }
+    .contact-card small { display: block; color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .12em; margin-bottom: 4px; }
+    footer { padding: 28px clamp(16px, 6vw, 96px); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); }
+
+    /* reveal */
+    .reveal { opacity: 0; transform: translateY(40px); }
+    .no-js .reveal, .reduced .reveal { opacity: 1; transform: none; }
+
+    /* fallback when WebGL is missing */
+    .fallback-photo { display: none; }
+    .no-webgl .fallback-photo { display: block; border-radius: 24px; margin-top: 30px; box-shadow: 0 30px 60px -30px rgba(0,0,0,.5); }
+
+    /* responsive */
+    @media (max-width: 960px) {
+      nav .link { display: none; }
+      #hero { align-items: flex-start; padding-top: 110px; }
+      .hero-copy h1 { font-size: clamp(48px, 15vw, 90px); }
+      .hero-flavor { left: 16px; right: auto; bottom: 36px; text-align: left; max-width: 52%; }
+      .hero-flavor .name { font-size: 20px; }
+      .dots { justify-content: flex-start; }
+      .scroll-hint { display: none; }
+      .brand small { display: none; }
+      .flavor-tabs { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; margin: 0 -16px; padding: 4px 16px 10px; scrollbar-width: none; }
+      .flavor-tab { flex: none; }
+      #gamme { grid-template-columns: 1fr; }
+      .bottle-space { min-height: 56vh; grid-row: 3; }
+      #pourquoi { grid-template-columns: 1fr; }
+      #pourquoi .col { grid-column: 1; padding-top: 50vh; }
+      .stats { grid-template-columns: repeat(3, 1fr); }
+      .stat b { font-size: 28px; }
+      #contact { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 960px) {
+      .gamme-head { grid-row: 1; } .flavor-tabs { grid-row: 2; }
+      .info-panel { grid-row: 4; } .benefits { grid-row: 5; }
+    }
+    @media (max-width: 560px) {
+      .hero-copy p { font-size: 15px; }
+      .hero-cta .btn { flex: 1; justify-content: center; }
+      .summary .btn { width: 100%; justify-content: center; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .marquee-track, .scroll-hint span { animation: none; }
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="loader" aria-hidden="true">
+    <div>
+      <div class="loader-bottle"><div class="loader-fill" id="loaderFill"></div></div>
+      <div class="loader-text">ON PRESSE VOS FRUITS…</div>
+    </div>
+  </div>
+
+  <div class="glow"></div>
+  <canvas id="stage" aria-hidden="true"></canvas>
+
+  <header id="top">
+    <a class="brand" href="#hero">
+      <span class="brand-mark">SC</span>
+      <span>Les Secrets Culinaires<small>JUS ARTISANAUX · NOISY-LE-GRAND</small></span>
+    </a>
+    <nav>
+      <a class="link" href="#gamme">La gamme</a>
+      <a class="link" href="#pourquoi">Notre secret</a>
+      <a class="link" href="#fabrication">Fabrication</a>
+      <a class="link" href="#contact">Contact</a>
+      <a class="btn sm cart-pill" href="#pack">Mon pack <span class="cart-count" id="cartCount"></span></a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section id="hero" data-stage="hero">
+      <div class="bg-word" id="bgWord">BISSAP</div>
+      <div class="hero-copy">
+        <span class="eyebrow reveal">100% naturel · fait maison</span>
+        <h1 class="reveal">Le goût du <span class="juicy">vrai</span> fruit.</h1>
+        <p class="reveal">Huit recettes préparées à la main à Noisy-le-Grand, inspirées des saveurs d'Afrique de l'Ouest et des tropiques. Bissap, tamarin, maad, ditax, gingembre… servis bien frais.</p>
+        <div class="hero-cta reveal">
+          <a class="btn orange" href="#pack">Composer mon pack →</a>
+          <a class="btn ghost" href="#gamme">Découvrir les saveurs</a>
+        </div>
+        <img class="fallback-photo" src="assets/gamme-jus.jpg" alt="Les six jus Les Secrets Culinaires alignés sur une table">
+      </div>
+      <div class="hero-flavor reveal">
+        <div class="now">Saveur du moment</div>
+        <div class="name" id="heroName">Bissap Rouge</div>
+        <div class="dots" id="heroDots"></div>
+      </div>
+      <div class="scroll-hint">Scroll<span></span></div>
+    </section>
+
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span>Bissap <i>✺</i> Tamarin <i>✺</i> Mangue Maad <i>✺</i> Gingembre <i>✺</i> Ditax <i>✺</i> Bouye Corossol <i>✺</i> Pastèque Goyave <i>✺</i> 100% naturel <i>✺</i></span>
+        <span>Bissap <i>✺</i> Tamarin <i>✺</i> Mangue Maad <i>✺</i> Gingembre <i>✺</i> Ditax <i>✺</i> Bouye Corossol <i>✺</i> Pastèque Goyave <i>✺</i> 100% naturel <i>✺</i></span>
+      </div>
+    </div>
+
+    <!-- GAMME -->
+    <section id="gamme" data-stage="gamme">
+      <div class="gamme-head reveal">
+        <span class="eyebrow">La gamme</span>
+        <h2>8 saveurs, 0 compromis</h2>
+        <p>Choisissez une saveur, faites tourner la bouteille.</p>
+      </div>
+      <div class="flavor-tabs reveal" id="flavorTabs" role="tablist" aria-label="Saveurs"></div>
+
+      <article class="info-panel reveal" aria-live="polite">
+        <span class="eyebrow" id="infoTag">Best-seller</span>
+        <h3 id="infoName">Bissap Rouge</h3>
+        <p id="infoDesc"></p>
+        <div class="ingredients" id="infoIngr"></div>
+        <div class="price-row">
+          <div class="price" id="infoPrice">4,00 € <small>/ 33 cl</small></div>
+          <button class="btn orange sm" id="infoAdd">+ Ajouter au pack</button>
+        </div>
+      </article>
+
+      <div class="bottle-space">
+        <div class="drag-hint">← Glissez pour tourner →</div>
+        <div class="arrows">
+          <button id="prevBtn" aria-label="Saveur précédente">←</button>
+          <button id="nextBtn" aria-label="Saveur suivante">→</button>
+        </div>
+      </div>
+
+      <ul class="benefits reveal" id="benefits"></ul>
+    </section>
+
+    <!-- POURQUOI -->
+    <section id="pourquoi" data-stage="pourquoi">
+      <div class="col">
+        <span class="eyebrow reveal">Notre secret</span>
+        <h2 class="reveal">Des fruits.<br>Point.</h2>
+        <div class="why-list">
+          <div class="reveal"><span class="n">01</span><p><b>Pressé en petites séries.</b> Chaque bouteille est préparée dans notre cuisine de Noisy-le-Grand, pour un goût frais et intense.</p></div>
+          <div class="reveal"><span class="n">02</span><p><b>Recettes de famille.</b> Bissap, maad, ditax, tamarin : des fruits de la tradition sénégalaise associés aux saveurs tropicales.</p></div>
+          <div class="reveal"><span class="n">03</span><p><b>Servi glacé, partout.</b> Pour vos pauses, vos événements, vos repas d'entreprise ou vos fêtes de famille.</p></div>
+        </div>
+        <div class="stats reveal">
+          <div class="stat"><b>100%</b><span>Naturel</span></div>
+          <div class="stat"><b>8</b><span>Saveurs</span></div>
+          <div class="stat"><b>33cl</b><span>Format nomade</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PHOTO -->
+    <section id="photo" data-stage="photo">
+      <div class="photo-wrap reveal">
+        <img id="photoImg" src="assets/gamme-jus.jpg" alt="Les six jus Les Secrets Culinaires : Tamarin Litchi Ananas, Bissap Rouge, Mangue Maad Passion, Pastèque Goyave Menthe Citron, Gingembre Ananas Passion, Ditax Menthe Citron" loading="lazy">
+        <div class="photo-caption">
+          <h3>Toute la gamme,<br>bien fraîche.</h3>
+          <a class="btn orange" href="#pack">Je goûte tout →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- FABRICATION : démonstration IA -->
+    <section id="fabrication" data-stage="fabrication">
+      <div class="fab-head">
+        <span class="eyebrow reveal">Transparence · vision IA</span>
+        <h2 class="reveal">Fait maison,<br>vérifié image<br>par image.</h2>
+        <p class="reveal">Nos vidéos de production, annotées par analyse IA : chaque étape de la recette est repérée à l'image, du dosage au blender gradué jusqu'à la mise en bouteille. Pas d'usine, pas de concentré : une cuisine, des bassines inox et des gestes précis.</p>
+      </div>
+
+      <div class="fab-grid">
+        <div class="reveal">
+          <div class="vid-tabs" role="tablist">
+            <button class="active" data-vid="0">① Préparation</button>
+            <button data-vid="1">② Mise en bouteille</button>
+          </div>
+          <div class="phone">
+            <video id="fabVideo" muted playsinline preload="metadata" poster="assets/video/preparation.jpg" src="assets/video/preparation.mp4"></video>
+            <canvas id="fabCanvas" aria-hidden="true"></canvas>
+          </div>
+          <div class="vid-ctrl">
+            <button id="fabPlay" aria-label="Lecture / pause">❚❚</button>
+            <div class="vid-bar" id="fabBar"><i></i></div>
+            <span class="vid-time" id="fabTime">0:00 / 0:00</span>
+          </div>
+        </div>
+
+        <div>
+          <ol class="steps reveal" id="fabSteps"></ol>
+          <div class="ai-log reveal" id="aiLog" aria-live="off"></div>
+        </div>
+      </div>
+
+      <div class="lab">
+        <div class="lab-card reveal">
+          <span class="eyebrow">Fiche technique</span>
+          <h3>Grammage au gramme près</h3>
+          <p>Chaque saveur suit une recette fixe, pesée pour chaque fournée. Choisissez une saveur et une taille de fournée : les quantités s'ajustent automatiquement.</p>
+          <div class="lab-controls">
+            <select id="labJuice" aria-label="Saveur"></select>
+            <label>Fournée <input type="range" id="labBatch" min="1" max="30" value="10"> <b id="labBatchVal">10 L</b></label>
+          </div>
+          <div class="compo" id="labCompo"></div>
+          <p class="tol" id="labTol"></p>
+        </div>
+        <div class="lab-card reveal">
+          <span class="eyebrow">Nutrition</span>
+          <h3>Valeurs nutritionnelles</h3>
+          <p id="labNutriIntro">Calculées automatiquement à partir de la recette et des tables de composition des aliments, au format de l'étiquetage européen (règlement INCO 1169/2011).</p>
+          <table class="nutri" id="labNutri"></table>
+          <div class="badges" id="labBadges"></div>
+          <div class="demo-note" id="labDemo" hidden></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PACK -->
+    <section id="pack" data-stage="pack">
+      <div class="pack-head">
+        <div>
+          <span class="eyebrow reveal">Commander</span>
+          <h2 class="reveal">Composez<br>votre pack</h2>
+        </div>
+        <p class="reveal">Mélangez les saveurs comme vous voulez. <b>Dès 6 bouteilles : −10%</b>, dès 12 : <b>−15%</b>. Envoi de la commande en un clic sur WhatsApp, retrait ou livraison à Noisy-le-Grand et alentours.</p>
+      </div>
+      <div class="pack-grid" id="packGrid"></div>
+      <div class="summary">
+        <div>
+          <div class="total" id="sumTotal">0,00 €</div>
+          <div class="detail" id="sumDetail">Votre pack est vide</div>
+          <div class="promo" id="sumPromo"></div>
+        </div>
+        <a class="btn orange" id="orderBtn" href="#" target="_blank" rel="noopener" aria-disabled="true">Commander sur WhatsApp</a>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" data-stage="contact">
+      <div>
+        <span class="eyebrow reveal">Contact</span>
+        <h2 class="reveal">Un événement ?<br>On s'occupe<br>des boissons.</h2>
+        <p class="reveal" style="color:var(--muted);max-width:460px;line-height:1.6">Anniversaires, mariages, séminaires, buffets d'entreprise : demandez un devis pour des jus en grande quantité, aux saveurs de votre choix.</p>
+      </div>
+      <div class="contact-card reveal">
+        <div><small>Téléphone</small><a href="tel:+33633249411">06 33 24 94 11</a></div>
+        <div><small>Fixe</small><a href="tel:+33185100238">01 85 10 02 38</a></div>
+        <div><small>Adresse</small><a href="https://maps.google.com/?q=7+allée+des+performances+93160+Noisy-le-Grand" target="_blank" rel="noopener">7 allée des Performances<br>93160 Noisy-le-Grand</a></div>
+        <a class="btn" href="https://wa.me/33633249411" target="_blank" rel="noopener" style="justify-content:center;font-size:15px">Écrire sur WhatsApp</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>© <span id="year"></span> Les Secrets Culinaires — Jus artisanaux</span>
+    <span>À consommer bien frais · Conserver au réfrigérateur</span>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script type="importmap">
+    { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    } }
+  </script>
+
+  <script type="module">
+    // three.js is loaded lazily so the shop still works if the CDN is unreachable
+    let THREE, RoundedBoxGeometry, RoomEnvironment;
+
+    /* =========================================================
+       DATA — adjust prices / texts here
+       ========================================================= */
+    const PRICE = 4.0;           // € per 33cl bottle (placeholder)
+    const WHATSAPP = '33633249411';
+
+    const JUICES = [
+      {
+        id: 'bissap', name: 'Bissap Rouge', lines: ['BISSAP', 'ROUGE'], sub: 'aux fruits rouges', word: 'BISSAP',
+        tag: 'Best-seller', liquid: '#6d0f24', label: '#d3122f', labelInk: '#ffffff', labelAccent: '#ffd23f', bg: '#ffe9ea',
+        desc: "Le grand classique : fleurs d'hibiscus infusées, relevées de fruits rouges. Acidulé, profond, ultra désaltérant.",
+        ingr: ['Hibiscus', 'Fruits rouges', 'Menthe'], emoji: '🌺🍓🫐',
+        benefits: [['🌺', 'Riche en antioxydants', "L'hibiscus est naturellement riche en anthocyanes."], ['❄️', 'Ultra rafraîchissant', 'Parfait servi glacé, en toute saison.']],
+        palette: ['#c8102e', '#7b1fa2', '#e91e63']
+      },
+      {
+        id: 'tamarin', name: 'Tamarin Litchi Ananas', lines: ['TAMARIN', 'LITCHI'], sub: 'ANANAS', word: 'TAMARIN',
+        tag: 'Exotique', liquid: '#a8692f', label: '#f8d0c8', labelInk: '#c3122f', labelAccent: '#e8a400', bg: '#fbeee3',
+        desc: "L'acidité caramélisée du tamarin, la douceur florale du litchi et la pointe solaire de l'ananas.",
+        ingr: ['Tamarin', 'Litchi', 'Ananas'], emoji: '🍍🌴',
+        benefits: [['🌿', 'Digestif', 'Le tamarin est traditionnellement apprécié après le repas.'], ['🍍', 'Fruité et doux', "Équilibré par le litchi et l'ananas."]],
+        palette: ['#8d5524', '#f5c542', '#f4a3a8']
+      },
+      {
+        id: 'maad', name: 'Mangue Maad Passion', lines: ['MANGUE', 'MAAD'], sub: 'PASSION', word: 'MAAD',
+        tag: 'Coup de cœur', liquid: '#f7a21b', label: '#ffb21c', labelInk: '#ffffff', labelAccent: '#7a3e00', bg: '#fff1d9',
+        desc: "La mangue bien mûre rencontre le maad, fruit acidulé du Sénégal, et le fruit de la passion. Une explosion tropicale.",
+        ingr: ['Mangue', 'Maad (Saba)', 'Passion'], emoji: '🥭',
+        benefits: [['☀️', 'Vitamine C', 'Le maad et la passion apportent une belle acidité naturelle.'], ['🥭', 'Texture gourmande', 'Une pulpe veloutée de mangue.']],
+        palette: ['#ff9f1c', '#ffd23f', '#7cb518']
+      },
+      {
+        id: 'pasteque', name: 'Pastèque Goyave Menthe Citron', lines: ['PASTÈQUE', 'GOYAVE'], sub: 'MENTHE CITRON', word: 'PASTÈQUE',
+        tag: 'Summer vibes', liquid: '#ea5267', label: '#ffffff', labelInk: '#d81b3c', labelAccent: '#2e9d3c', bg: '#ffeef0',
+        desc: "Léger, juteux et vivifiant : pastèque et goyave rose, twist de menthe fraîche et de citron vert.",
+        ingr: ['Pastèque', 'Goyave', 'Menthe', 'Citron vert'], emoji: '🍉🍋',
+        benefits: [['💧', 'Hydratant', 'La pastèque est composée à plus de 90% d’eau.'], ['🌱', 'Fraîcheur mentholée', 'Menthe fraîche et citron vert pour le peps.']],
+        palette: ['#ef476f', '#06d6a0', '#a7c957']
+      },
+      {
+        id: 'gingembre', name: 'Gingembre Ananas Passion', lines: ['GINGEMBRE', 'ANANAS'], sub: 'PASSION', word: 'GINGEMBRE',
+        tag: 'Ça pique !', liquid: '#f3c62f', label: '#fff2b3', labelInk: '#c3122f', labelAccent: '#e39b00', bg: '#fff8d6',
+        desc: "Le coup de fouet : gingembre frais pressé, adouci par l'ananas et la passion. Puissant et addictif.",
+        ingr: ['Gingembre', 'Ananas', 'Passion'], emoji: '🫚🍍',
+        benefits: [['🔥', 'Tonique', 'Le gingembre réveille et réchauffe.'], ['🍍', 'Équilibré', "L'ananas arrondit le piquant."]],
+        palette: ['#f6c90e', '#e09f3e', '#9ccc65']
+      },
+      {
+        id: 'ditax', name: 'Ditax Menthe Citron', lines: ['DITAX', 'MENTHE'], sub: 'CITRON', word: 'DITAX',
+        tag: 'Rare', liquid: '#cbd86a', label: '#7cc242', labelInk: '#ffffff', labelAccent: '#fff35c', bg: '#f1f8df',
+        desc: "Le ditax (Détarium sénégalais), fruit vert rare et parfumé, associé à la menthe et au citron. Un trésor à découvrir.",
+        ingr: ['Ditax', 'Menthe', 'Citron'], emoji: '🍈🌿',
+        benefits: [['🌿', 'Fruit rare', 'Le ditax est un fruit emblématique du Sénégal.'], ['🍋', 'Vif et acidulé', 'Menthe et citron pour un final frais.']],
+        palette: ['#7cc242', '#c5e063', '#2d6a4f']
+      },
+      {
+        id: 'bissapblanc', name: 'Bissap Blanc', lines: ['BISSAP', 'BLANC'], sub: 'aux fruits exotiques', word: 'BLANC',
+        tag: 'Nouveau', liquid: '#d49a4c', label: '#f5e4c6', labelInk: '#c3122f', labelAccent: '#8a5a1c', bg: '#fbf1e2',
+        desc: "La version douce du bissap : fleurs d'hibiscus blanc infusées, mariées à des fruits exotiques. Doux, floral, gourmand.",
+        ingr: ['Hibiscus blanc', 'Fruits exotiques', 'Menthe'], emoji: '🌼🍍',
+        benefits: [['🌼', 'Doux et floral', "Moins acidulé que le bissap rouge."], ['🍍', 'Note exotique', 'Des fruits tropicaux pour la rondeur.']],
+        palette: ['#e7b96b', '#f6e3b4', '#a3c45a']
+      },
+      {
+        id: 'bouye', name: 'Bouye Corossol Ananas', lines: ['BOUYE', 'COROSSOL'], sub: 'ANANAS', word: 'BOUYE',
+        tag: 'Tradition', liquid: '#c9a571', label: '#f4eedc', labelInk: '#2e8b3d', labelAccent: '#d79a00', bg: '#f7f1e3',
+        desc: "Le bouye, fruit du baobab, crémeux et acidulé, avec la douceur du corossol et la vivacité de l'ananas.",
+        ingr: ['Bouye (baobab)', 'Corossol', 'Ananas'], emoji: '🌳🍍',
+        benefits: [['🌳', 'Fruit du baobab', 'Le bouye est naturellement riche en fibres et en vitamine C.'], ['🥛', 'Texture veloutée', 'Une boisson onctueuse et rassasiante.']],
+        palette: ['#e8dcc0', '#c9a571', '#7cb518']
+      }
+    ];
+
+    const fmt = n => n.toFixed(2).replace('.', ',') + ' €';
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) document.documentElement.classList.add('reduced');
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    /* =========================================================
+       UI: flavor selection (shared by hero dots, tabs, arrows)
+       ========================================================= */
+    let current = 0;
+    let userPicked = false;
+    const listeners = [];
+    const onFlavor = fn => listeners.push(fn);
+
+    function setFlavor(i, fromUser = false) {
+      i = (i + JUICES.length) % JUICES.length;
+      if (fromUser) userPicked = true;
+      if (i === current && document.body.dataset.ready) return;
+      current = i;
+      listeners.forEach(fn => fn(JUICES[i], i));
+    }
+
+    const root = document.documentElement.style;
+    const heroDots = document.getElementById('heroDots');
+    const tabs = document.getElementById('flavorTabs');
+    JUICES.forEach((j, i) => {
+      const d = document.createElement('button');
+      d.style.setProperty('--c', j.liquid);
+      d.setAttribute('aria-label', j.name);
+      d.onclick = () => setFlavor(i, true);
+      heroDots.appendChild(d);
+
+      const t = document.createElement('button');
+      t.className = 'flavor-tab'; t.role = 'tab';
+      t.style.setProperty('--c', j.liquid);
+      t.textContent = j.name;
+      t.onclick = () => setFlavor(i, true);
+      tabs.appendChild(t);
+    });
+    document.getElementById('prevBtn').onclick = () => setFlavor(current - 1, true);
+    document.getElementById('nextBtn').onclick = () => setFlavor(current + 1, true);
+    document.getElementById('infoAdd').onclick = () => { addToPack(JUICES[current].id, 1); };
+
+    onFlavor((j, i) => {
+      root.setProperty('--bg', j.bg);
+      root.setProperty('--juice', j.liquid);
+      document.getElementById('heroName').textContent = j.name;
+      document.getElementById('bgWord').textContent = j.word;
+      [...heroDots.children].forEach((d, k) => d.classList.toggle('active', k === i));
+      [...tabs.children].forEach((t, k) => { t.classList.toggle('active', k === i); t.setAttribute('aria-selected', k === i); });
+      document.getElementById('infoTag').textContent = j.tag;
+      document.getElementById('infoName').textContent = j.name;
+      document.getElementById('infoDesc').textContent = j.desc;
+      document.getElementById('infoIngr').innerHTML = j.ingr.map(x => `<span>${x}</span>`).join('');
+      document.getElementById('infoPrice').innerHTML = `${fmt(PRICE)} <small>/ 33 cl</small>`;
+      document.getElementById('benefits').innerHTML = j.benefits.map(([ico, t, s]) =>
+        `<li><span class="ico">${ico}</span><span><b>${t}</b><small>${s}</small></span></li>`).join('') +
+        `<li><span class="ico">🧊</span><span><b>À servir très frais</b><small>Conserver au réfrigérateur, agiter avant d'ouvrir.</small></span></li>`;
+      if (window.gsap && !reduced) {
+        gsap.fromTo('.info-panel > *', { y: 14, opacity: 0 }, { y: 0, opacity: 1, stagger: .05, duration: .5, ease: 'power3.out' });
+        gsap.fromTo('#bgWord', { opacity: 0, scale: .92 }, { opacity: 1, scale: 1, duration: .8, ease: 'power3.out' });
+      }
+    });
+
+    /* =========================================================
+       PACK BUILDER + WhatsApp order
+       ========================================================= */
+    const cart = Object.fromEntries(JUICES.map(j => [j.id, 0]));
+    try { Object.assign(cart, JSON.parse(localStorage.getItem('sc-pack') || '{}')); } catch (e) {}
+
+    const grid = document.getElementById('packGrid');
+    JUICES.forEach(j => {
+      const c = document.createElement('div');
+      c.className = 'card reveal';
+      c.style.setProperty('--c', j.liquid);
+      c.innerHTML = `
+        <div class="mini" style="--label:${j.label}"><i></i></div>
+        <h3>${j.name}</h3>
+        <div class="sub">${j.ingr.join(' · ')}</div>
+        <div class="qty">
+          <span class="p">${fmt(PRICE)}</span>
+          <div class="stepper">
+            <button aria-label="Retirer ${j.name}" data-d="-1">−</button>
+            <output id="q-${j.id}">0</output>
+            <button aria-label="Ajouter ${j.name}" data-d="1">+</button>
+          </div>
+        </div>`;
+      c.querySelectorAll('button').forEach(b => b.onclick = () => addToPack(j.id, +b.dataset.d));
+      // 3D tilt
+      c.addEventListener('pointermove', e => {
+        const r = c.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+        c.style.transform = `perspective(800px) rotateY(${(x - .5) * 14}deg) rotateX(${(.5 - y) * 14}deg)`;
+        c.style.setProperty('--mx', x * 100 + '%'); c.style.setProperty('--my', y * 100 + '%');
+      });
+      c.addEventListener('pointerleave', () => c.style.transform = '');
+      grid.appendChild(c);
+    });
+
+    function addToPack(id, d) {
+      cart[id] = Math.max(0, (cart[id] || 0) + d);
+      try { localStorage.setItem('sc-pack', JSON.stringify(cart)); } catch (e) {}
+      renderCart();
+      if (d > 0 && window.gsap) {
+        gsap.fromTo('#cartCount', { scale: 1.6 }, { scale: 1, duration: .5, ease: 'back.out(3)' });
+        splash();
+      }
+    }
+
+    function renderCart() {
+      let n = 0;
+      JUICES.forEach(j => { n += cart[j.id]; document.getElementById('q-' + j.id).textContent = cart[j.id]; });
+      const sub = n * PRICE;
+      const rate = n >= 12 ? .15 : n >= 6 ? .10 : 0;
+      const total = sub * (1 - rate);
+      document.getElementById('cartCount').textContent = n || '';
+      document.getElementById('sumTotal').textContent = fmt(total);
+      document.getElementById('sumDetail').textContent = n ? `${n} bouteille${n > 1 ? 's' : ''} · sous-total ${fmt(sub)}` : 'Votre pack est vide';
+      document.getElementById('sumPromo').textContent =
+        rate ? `Remise de ${rate * 100}% appliquée 🎉` : n ? `Encore ${6 - n} bouteille${6 - n > 1 ? 's' : ''} pour −10%` : '';
+      const btn = document.getElementById('orderBtn');
+      btn.setAttribute('aria-disabled', n ? 'false' : 'true');
+      const lines = JUICES.filter(j => cart[j.id]).map(j => `• ${cart[j.id]} × ${j.name}`).join('\n');
+      const msg = `Bonjour Les Secrets Culinaires ! Je souhaite commander :\n${lines}\n\nTotal estimé : ${fmt(total)}${rate ? ` (remise ${rate * 100}%)` : ''}\nMerci de me confirmer la disponibilité 🙏`;
+      btn.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
+    }
+    renderCart();
+
+    /* =========================================================
+       FABRICATION — AI-annotated videos, recipe sheet, nutrition
+       ========================================================= */
+    // Once the juices have been analysed by a lab, set demo:false and lab:'<report reference>'.
+    const NUTRITION = { demo: true, lab: '' };
+
+    // Reference values per 100 g: [kcal, fat, carbs, sugars, protein, salt]. est = estimated (few public data).
+    const FOODS = {
+      eau: { n: 'Eau', v: [0, 0, 0, 0, 0, 0] },
+      infusion: { n: "Infusion d'hibiscus", v: [2, 0, .4, 0, 0, 0] },
+      infusionb: { n: "Infusion d'hibiscus blanc", v: [2, 0, .4, 0, 0, 0] },
+      sucre: { n: 'Sucre de canne', v: [400, 0, 100, 100, 0, 0] },
+      rouges: { n: 'Fruits rouges', v: [45, .3, 8, 6, 1, 0] },
+      tamarin: { n: 'Pulpe de tamarin', v: [239, .6, 57, 57, 2.8, .07] },
+      litchi: { n: 'Litchi', v: [66, .4, 16.5, 15.2, .8, 0] },
+      ananas: { n: 'Ananas', v: [52, .2, 12, 10, .5, 0] },
+      mangue: { n: 'Mangue', v: [62, .3, 14, 13.5, .6, 0] },
+      maad: { n: 'Pulpe de maad', v: [80, .5, 18, 12, 1, 0], est: true },
+      passion: { n: 'Fruit de la passion', v: [97, .7, 13, 11, 2.2, .07] },
+      pasteque: { n: 'Pastèque', v: [30, .2, 7.5, 6.2, .6, 0] },
+      goyave: { n: 'Goyave', v: [68, 1, 14, 9, 2.6, 0] },
+      citron: { n: 'Jus de citron', v: [24, .2, 8, 2.5, .4, 0] },
+      menthe: { n: 'Menthe fraîche', v: [44, .7, 8, 0, 3.3, .08] },
+      gingembre: { n: 'Gingembre frais', v: [80, .8, 18, 1.7, 1.8, .03] },
+      ditax: { n: 'Pulpe de ditax', v: [110, .5, 25, 15, 2, 0], est: true },
+      bouye: { n: 'Pulpe de bouye', v: [250, .3, 75, 23, 2.3, .01], est: true },
+      corossol: { n: 'Corossol', v: [66, .3, 16.8, 13.5, 1, .03] }
+    };
+    // Grams per 1 000 g of juice — EXAMPLES, replace with the real recipes.
+    const RECIPES = {
+      bissap: { infusion: 780, rouges: 100, sucre: 110, menthe: 10 },
+      tamarin: { eau: 450, tamarin: 180, litchi: 150, ananas: 130, sucre: 90 },
+      maad: { mangue: 380, eau: 290, maad: 150, passion: 100, sucre: 80 },
+      pasteque: { pasteque: 520, goyave: 200, eau: 170, sucre: 60, citron: 40, menthe: 10 },
+      gingembre: { ananas: 380, eau: 340, passion: 100, sucre: 90, gingembre: 60, citron: 30 },
+      ditax: { eau: 560, ditax: 250, sucre: 115, citron: 60, menthe: 15 },
+      bissapblanc: { infusionb: 700, sucre: 110, ananas: 100, mangue: 80, menthe: 10 },
+      bouye: { eau: 400, corossol: 180, bouye: 160, ananas: 150, sucre: 80 }
+    };
+
+    const STEPS = [
+      ['Dosage', 'Fruits frais mesurés au blender gradué'],
+      ['Mixage', 'Pulpe fraîche travaillée à la main'],
+      ['Filtration', 'Passage au tamis fin'],
+      ['Homogénéisation', 'Fouettée en bassine inox'],
+      ['Mise en bouteille', "Remplissage à l'entonnoir inox"],
+      ['Contrôle qualité', 'Gants, étiquetage, inspection visuelle']
+    ];
+    // [start, end, step, label, box [x, y, w, h] normalised to the 9:16 frame, juice id]
+    const VIDEOS = [
+      { src: 'assets/video/preparation.mp4', poster: 'assets/video/preparation.jpg', seg: [
+        [0, 1, -1, 'Gamme complète', [.03, .32, .94, .36]],
+        [1, 5, 0, 'Blender gradué · volume lu sur la graduation', [.06, .03, .88, .8]],
+        [5, 8, 1, 'Pulpe de mangue fraîche', [.1, .12, .8, .72]],
+        [8, 12, 2, 'Tamis fin · filtration de la pulpe', [.06, .22, .88, .5]],
+        [12, 16, 3, 'Fouet · homogénéisation', [.06, .18, .88, .62]],
+        [16, 24, 3, 'Bases prêtes · bassines inox', [.04, .4, .92, .56]],
+        [24, 28, 5, 'Port de gants · gamme alignée', [.04, .3, .92, .4]]
+      ] },
+      { src: 'assets/video/embouteillage.mp4', poster: 'assets/video/embouteillage.jpg', seg: [
+        [0, 3, 4, 'Ditax Menthe Citron · remplissage', [.04, .02, .5, .95], 'ditax'],
+        [4, 7, 4, 'Tamarin Litchi Ananas · remplissage', [.12, .02, .58, .95], 'tamarin'],
+        [7, 10, 4, 'Bissap Rouge · remplissage', [.15, .02, .62, .95], 'bissap'],
+        [11, 14, 4, 'Mangue Maad Passion · remplissage', [.12, .08, .6, .9], 'maad'],
+        [14, 17, 4, 'Bouye Corossol Ananas · remplissage', [.3, .18, .58, .78], 'bouye'],
+        [18, 24, 4, 'Bissap Blanc · remplissage', [.15, .02, .62, .95], 'bissapblanc'],
+        [25, 30, 4, 'Gingembre Ananas Passion · remplissage', [.32, .12, .6, .84], 'gingembre'],
+        [31, 44, 5, 'Contrôle visuel · port de gants', [.02, .3, .96, .68]]
+      ] }
+    ];
+
+    const fabVideo = document.getElementById('fabVideo');
+    const fabCanvas = document.getElementById('fabCanvas');
+    const fctx = fabCanvas.getContext('2d');
+    const fabSteps = document.getElementById('fabSteps');
+    const aiLog = document.getElementById('aiLog');
+    const vidTabs = [...document.querySelectorAll('.vid-tabs button')];
+    let vidIdx = 0, curSeg = null, fabVisible = false, wantPlay = !reduced;
+    const seenSteps = new Set();
+    const seenJuices = new Set();
+
+    fabSteps.innerHTML = STEPS.map(([t, d]) => `<li><span><b>${t}</b><small>${d}</small></span><span class="chk">en attente</span></li>`).join('');
+    const stepEls = [...fabSteps.children];
+    const mmss = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+
+    function log(html) {
+      const d = document.createElement('div'); d.innerHTML = html; aiLog.appendChild(d);
+      while (aiLog.children.length > 7) aiLog.firstChild.remove();
+    }
+    log('<span class="t">[init]</span> Vision IA prête · analyse des vidéos de production');
+
+    function loadVideo(i, play = true) {
+      vidIdx = i; curSeg = null;
+      vidTabs.forEach((b, k) => b.classList.toggle('active', k === i));
+      fabVideo.poster = VIDEOS[i].poster; fabVideo.src = VIDEOS[i].src;
+      log(`<span class="t">[source]</span> ${i ? 'Vidéo 2 · mise en bouteille' : 'Vidéo 1 · préparation'}`);
+      if (play && fabVisible) fabVideo.play().catch(() => {});
+    }
+    vidTabs.forEach((b, k) => b.onclick = () => { wantPlay = true; loadVideo(k); });
+    fabVideo.addEventListener('ended', () => loadVideo((vidIdx + 1) % VIDEOS.length));
+    const playBtn = document.getElementById('fabPlay');
+    playBtn.onclick = () => { if (fabVideo.paused) { wantPlay = true; fabVideo.play().catch(() => {}); } else { wantPlay = false; fabVideo.pause(); } };
+    fabVideo.addEventListener('play', () => playBtn.textContent = '❚❚');
+    fabVideo.addEventListener('pause', () => playBtn.textContent = '▶');
+    document.getElementById('fabBar').onclick = e => {
+      const r = e.currentTarget.getBoundingClientRect();
+      if (fabVideo.duration) fabVideo.currentTime = (e.clientX - r.left) / r.width * fabVideo.duration;
+    };
+    stepEls.forEach((li, k) => li.onclick = () => {
+      const v = VIDEOS.findIndex(v => v.seg.some(s => s[2] === k));
+      const seg = VIDEOS[v].seg.find(s => s[2] === k);
+      const seek = () => { fabVideo.currentTime = seg[0] + .05; fabVideo.play().catch(() => {}); };
+      wantPlay = true;
+      if (v !== vidIdx) { loadVideo(v, false); fabVideo.addEventListener('loadedmetadata', seek, { once: true }); } else seek();
+    });
+
+    new IntersectionObserver(([e]) => {
+      fabVisible = e.isIntersecting;
+      if (fabVisible && wantPlay) fabVideo.play().catch(() => {});
+      if (!fabVisible) fabVideo.pause();
+    }, { threshold: .35 }).observe(fabVideo);
+
+    function onSegment(seg) {
+      const [s, , step, label, , juice] = seg;
+      log(`<span class="t">[${mmss(s)}]</span> ${label}`);
+      if (step >= 0 && !seenSteps.has(step)) { seenSteps.add(step); log(`<span class="t">[✓]</span> Étape ${step + 1}/6 observée · ${STEPS[step][0]} (${seenSteps.size}/6)`); }
+      if (juice && !seenJuices.has(juice)) {
+        seenJuices.add(juice);
+        log(`<span class="t">[lot]</span> Saveur identifiée : ${JUICES.find(j => j.id === juice).name} (${seenJuices.size}/${JUICES.length})`);
+        labSelect.value = juice; renderLab();
+      }
+      stepEls.forEach((li, k) => {
+        li.classList.toggle('live', k === step);
+        li.classList.toggle('done', seenSteps.has(k) && k !== step);
+        li.querySelector('.chk').textContent = k === step ? 'en cours' : seenSteps.has(k) ? '✓ vérifié' : 'en attente';
+      });
+    }
+
+    // overlay
+    const box = { x: .1, y: .1, w: .8, h: .8, a: 0 };
+    function drawOverlay(now) {
+      requestAnimationFrame(drawOverlay);
+      if (!fabVisible) return;
+      const dpr = Math.min(devicePixelRatio, 2);
+      const W = fabCanvas.clientWidth, H = fabCanvas.clientHeight;
+      if (fabCanvas.width !== W * dpr) { fabCanvas.width = W * dpr; fabCanvas.height = H * dpr; }
+      fctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      fctx.clearRect(0, 0, W, H);
+
+      const t = fabVideo.currentTime || 0, dur = fabVideo.duration || 0;
+      document.querySelector('#fabBar i').style.width = dur ? (t / dur * 100) + '%' : 0;
+      document.getElementById('fabTime').textContent = `${mmss(t)} / ${mmss(dur)}`;
+
+      const seg = VIDEOS[vidIdx].seg.find(s => t >= s[0] && t < s[1]) || null;
+      if (seg !== curSeg) { curSeg = seg; if (seg) onSegment(seg); }
+      const k = reduced ? 1 : .12;
+      if (seg) { const [x, y, w, h] = seg[4]; box.x += (x - box.x) * k; box.y += (y - box.y) * k; box.w += (w - box.w) * k; box.h += (h - box.h) * k; }
+      box.a += ((seg ? 1 : 0) - box.a) * .15;
+
+      // scan line
+      if (!reduced) {
+        const sy = ((now / 2600) % 1) * H;
+        const g = fctx.createLinearGradient(0, sy - 40, 0, sy);
+        g.addColorStop(0, 'rgba(255,157,59,0)'); g.addColorStop(1, 'rgba(255,157,59,.35)');
+        fctx.fillStyle = g; fctx.fillRect(0, sy - 40, W, 40);
+        fctx.fillStyle = 'rgba(255,190,120,.9)'; fctx.fillRect(0, sy, W, 1.5);
+      }
+
+      // detection box
+      if (box.a > .02) {
+        const x = box.x * W, y = box.y * H, w = box.w * W, h = box.h * H, c = 18;
+        fctx.globalAlpha = box.a;
+        fctx.strokeStyle = 'rgba(255,179,71,.45)'; fctx.lineWidth = 1; fctx.strokeRect(x, y, w, h);
+        fctx.strokeStyle = '#ffb347'; fctx.lineWidth = 3; fctx.lineCap = 'round';
+        fctx.beginPath();
+        [[x, y, 1, 1], [x + w, y, -1, 1], [x, y + h, 1, -1], [x + w, y + h, -1, -1]].forEach(([px, py, dx, dy]) => {
+          fctx.moveTo(px + dx * c, py); fctx.lineTo(px, py); fctx.lineTo(px, py + dy * c);
+        });
+        fctx.stroke();
+        if (curSeg) {
+          const txt = curSeg[3];
+          fctx.font = '700 11px Inter, sans-serif';
+          const tw = Math.min(fctx.measureText(txt).width + 22, W - 16);
+          const lx = Math.min(Math.max(8, x), W - tw - 8), ly = y > 64 ? y - 28 : y + 8;
+          fctx.fillStyle = 'rgba(27,20,16,.86)'; fctx.beginPath(); fctx.roundRect(lx, ly, tw, 22, 11); fctx.fill();
+          fctx.fillStyle = '#ff9d3b'; fctx.beginPath(); fctx.arc(lx + 10, ly + 11, 3, 0, 7); fctx.fill();
+          fctx.fillStyle = '#fff'; fctx.fillText(txt, lx + 17, ly + 15, tw - 22);
+        }
+        fctx.globalAlpha = 1;
+      }
+
+      // HUD
+      fctx.font = '800 10px Inter, sans-serif';
+      fctx.fillStyle = 'rgba(0,0,0,.55)'; fctx.beginPath(); fctx.roundRect(10, 10, 132, 22, 11); fctx.fill();
+      fctx.fillStyle = (now % 1000 < 600) ? '#ff3b3b' : 'rgba(255,59,59,.3)'; fctx.beginPath(); fctx.arc(22, 21, 4, 0, 7); fctx.fill();
+      fctx.fillStyle = '#fff'; fctx.fillText('VISION IA · ANALYSE', 31, 25);
+      if (curSeg && curSeg[2] >= 0) {
+        const st = `ÉTAPE ${curSeg[2] + 1}/6 · ${STEPS[curSeg[2]][0].toUpperCase()}`;
+        const tw = fctx.measureText(st).width + 20;
+        fctx.fillStyle = 'rgba(255,122,0,.92)'; fctx.beginPath(); fctx.roundRect((W - tw) / 2, H - 34, tw, 22, 11); fctx.fill();
+        fctx.fillStyle = '#fff'; fctx.fillText(st, (W - tw) / 2 + 10, H - 19);
+      }
+    }
+    requestAnimationFrame(drawOverlay);
+
+    // recipe & nutrition
+    const labSelect = document.getElementById('labJuice');
+    const labBatch = document.getElementById('labBatch');
+    labSelect.innerHTML = JUICES.map(j => `<option value="${j.id}">${j.name}</option>`).join('');
+    const num = (v, d = 1) => v.toFixed(d).replace('.', ',');
+    function renderLab() {
+      const j = JUICES.find(x => x.id === labSelect.value), rec = RECIPES[j.id], L = +labBatch.value;
+      document.getElementById('labBatchVal').textContent = L + ' L';
+      const max = Math.max(...Object.values(rec));
+      let est = false;
+      document.getElementById('labCompo').innerHTML = Object.entries(rec).map(([k, g]) => {
+        const f = FOODS[k]; if (f.est) est = true;
+        const q = g * L; const qs = q >= 1000 ? num(q / 1000, 2) + ' kg' : Math.round(q) + ' g';
+        return `<div class="compo-row" style="--c:${j.liquid}"><span>${f.n}${f.est ? ' *' : ''}</span><b>${qs}</b><span class="bar"><i style="width:${g / max * 100}%"></i></span></div>`;
+      }).join('');
+      document.getElementById('labTol').textContent = `Pour ${L} L : ${num(L, 0)} kg de préparation ≈ ${Math.floor(L * 1000 / 330)} bouteilles de 33 cl.` + (est ? ' * valeur de référence estimée (peu de données publiques).' : '');
+
+      // nutrition per 100 mL (density taken as 1)
+      const tot = [0, 0, 0, 0, 0, 0];
+      Object.entries(rec).forEach(([k, g]) => FOODS[k].v.forEach((v, i) => tot[i] += v * g / 1000));
+      const kcal = tot[0], b = 3.3;
+      const rows = [
+        ['Énergie', `${Math.round(kcal * 4.184)} kJ / ${Math.round(kcal)} kcal`, `${Math.round(kcal * 4.184 * b)} kJ / ${Math.round(kcal * b)} kcal`],
+        ['Matières grasses', num(tot[1]) + ' g', num(tot[1] * b) + ' g'],
+        ['dont acides gras saturés', '< 0,1 g', '< 0,1 g', 1],
+        ['Glucides', num(tot[2]) + ' g', num(tot[2] * b) + ' g'],
+        ['dont sucres', num(tot[3]) + ' g', num(tot[3] * b) + ' g', 1],
+        ['Protéines', num(tot[4]) + ' g', num(tot[4] * b) + ' g'],
+        ['Sel', num(tot[5], 2) + ' g', num(tot[5] * b, 2) + ' g']
+      ];
+      document.getElementById('labNutri').innerHTML =
+        `<thead><tr><th>${j.name}</th><th>pour 100 mL</th><th>par bouteille 33 cl</th></tr></thead><tbody>` +
+        rows.map(([n, a, c, sub]) => `<tr><td class="${sub ? 'sub' : ''}">${n}</td><td>${a}</td><td>${c}</td></tr>`).join('') + '</tbody>';
+      document.getElementById('labBadges').innerHTML =
+        `<span class="badge ok">✓ Fait maison · vidéo à l'appui</span><span class="badge ok">✓ Recette pesée</span>` +
+        (NUTRITION.lab ? `<span class="badge ok">✓ Analysé en laboratoire · réf. ${NUTRITION.lab}</span>` : `<span class="badge wait">⏳ Analyse laboratoire à venir</span>`);
+      const note = document.getElementById('labDemo');
+      note.hidden = !NUTRITION.demo;
+      note.textContent = 'Données de démonstration : les grammages et les valeurs sont des exemples calculés. Remplacez-les par vos recettes réelles avant la mise en ligne.';
+    }
+    labSelect.onchange = renderLab; labBatch.oninput = renderLab;
+    renderLab();
+
+    /* =========================================================
+       GSAP: reveals, header, photo parallax
+       ========================================================= */
+    const header = document.getElementById('top');
+    addEventListener('scroll', () => header.classList.toggle('scrolled', scrollY > 30), { passive: true });
+
+    if (window.gsap && window.ScrollTrigger && !reduced) {
+      gsap.registerPlugin(ScrollTrigger);
+      ScrollTrigger.batch('.reveal', {
+        start: 'top 88%',
+        onEnter: els => gsap.to(els, { opacity: 1, y: 0, duration: .9, stagger: .08, ease: 'power3.out' })
+      });
+      gsap.to('#photoImg', { yPercent: -15, ease: 'none', scrollTrigger: { trigger: '.photo-wrap', scrub: true } });
+      gsap.to('.marquee', { xPercent: -6, ease: 'none', scrollTrigger: { trigger: '.marquee', scrub: true } });
+    } else {
+      document.querySelectorAll('.reveal').forEach(el => { el.style.opacity = 1; el.style.transform = 'none'; });
+    }
+
+    /* =========================================================
+       THREE.JS — the 3D bottle
+       ========================================================= */
+    const loaderFill = document.getElementById('loaderFill');
+    loaderFill.style.height = '40%';
+    setTimeout(() => hideLoader(), 4000);   // never block the page on a slow network
+    let splash = () => {};
+
+    function hideLoader() {
+      loaderFill.style.height = '100%';
+      setTimeout(() => document.getElementById('loader').classList.add('done'), 350);
+      document.body.dataset.ready = '1';
+    }
+
+    function initThree() {
+      const canvas = document.getElementById('stage');
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      let dpr = Math.min(devicePixelRatio, innerWidth < 700 ? 1.5 : 2);
+      renderer.setPixelRatio(dpr);
+      renderer.setSize(innerWidth, innerHeight);
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.05;
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+      const scene = new THREE.Scene();
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+
+      const camera = new THREE.PerspectiveCamera(32, innerWidth / innerHeight, 0.1, 100);
+      camera.position.set(0, 0, 11);
+
+      const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(4, 6, 5); scene.add(key);
+      const rim = new THREE.DirectionalLight(0xffd2a0, 1.6); rim.position.set(-5, 2, -4); scene.add(rim);
+      scene.add(new THREE.AmbientLight(0xffffff, .35));
+
+      /* ---- bottle ---- */
+      const rig = new THREE.Group();      // scroll-driven position
+      const spin = new THREE.Group();     // flavor-change spin + drag
+      rig.add(spin); scene.add(rig);
+
+      const W = 1.25, H = 2.5;
+      const glass = new THREE.MeshPhysicalMaterial({
+        color: 0xffffff, metalness: 0, roughness: 0.06, transmission: 1, thickness: 0.35, ior: 1.45,
+        clearcoat: 1, clearcoatRoughness: 0.05, transparent: true, opacity: 1, envMapIntensity: 1.2
+      });
+      const body = new THREE.Mesh(new RoundedBoxGeometry(W, H, W, 8, 0.3), glass);
+      spin.add(body);
+
+      // shoulder + neck (lathe)
+      const prof = [
+        [0.62, H / 2 - 0.25], [0.60, H / 2 - 0.05], [0.53, H / 2 + 0.12], [0.43, H / 2 + 0.26],
+        [0.36, H / 2 + 0.34], [0.35, H / 2 + 0.55]
+      ].map(([x, y]) => new THREE.Vector2(x, y));
+      const shoulder = new THREE.Mesh(new THREE.LatheGeometry(prof, 48), glass);
+      spin.add(shoulder);
+
+      // liquid
+      const FILL = 0.84;
+      const liquidMat = new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color(JUICES[0].liquid), roughness: 0.3, clearcoat: .6, envMapIntensity: .6
+      });
+      const liquidGeo = new RoundedBoxGeometry(W - 0.1, H * FILL, W - 0.1, 6, 0.25);
+      liquidGeo.translate(0, H * FILL / 2, 0);
+      const liquid = new THREE.Mesh(liquidGeo, liquidMat);
+      liquid.position.y = -H / 2 + 0.05;
+      spin.add(liquid);
+
+      // cap
+      const capMat = new THREE.MeshStandardMaterial({ color: 0xff7a00, roughness: 0.42, metalness: 0 });
+      const capGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.42, 64, 1);
+      // vertical ridges on the cap
+      const cp = capGeo.attributes.position;
+      for (let k = 0; k < cp.count; k++) {
+        const x = cp.getX(k), z = cp.getZ(k), a = Math.atan2(z, x);
+        const r = Math.hypot(x, z);
+        if (r > 0.4) { const s = 1 + Math.sin(a * 32) * 0.018; cp.setX(k, x * s); cp.setZ(k, z * s); }
+      }
+      capGeo.computeVertexNormals();
+      const cap = new THREE.Mesh(capGeo, capMat);
+      cap.position.y = H / 2 + 0.76; spin.add(cap);
+      const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.44, 0.07, 48), capMat);
+      ring.position.y = H / 2 + 0.5; spin.add(ring);
+
+      // label (canvas texture)
+      const lc = document.createElement('canvas'); lc.width = 600; lc.height = 1000;
+      const lctx = lc.getContext('2d');
+      const labelTex = new THREE.CanvasTexture(lc);
+      labelTex.colorSpace = THREE.SRGBColorSpace;
+      labelTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      const labelMat = new THREE.MeshStandardMaterial({ map: labelTex, roughness: 0.55, transparent: true });
+      const label = new THREE.Mesh(new THREE.PlaneGeometry(W * 0.84, W * 0.84 * 1000 / 600), labelMat);
+      label.position.set(0, -0.12, W / 2 + 0.006);
+      spin.add(label);
+      const backLabel = label.clone(); backLabel.rotation.y = Math.PI; backLabel.position.z = -W / 2 - 0.006;
+      spin.add(backLabel);
+
+      function roundRect(ctx, x, y, w, h, r) {
+        ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+      }
+      function drawLabel(j) {
+        const c = lctx, w = lc.width, h = lc.height;
+        c.clearRect(0, 0, w, h);
+        roundRect(c, 4, 4, w - 8, h - 8, 56);
+        const g = c.createLinearGradient(0, 0, 0, h);
+        g.addColorStop(0, j.label); g.addColorStop(1, shade(j.label, -0.12));
+        c.fillStyle = g; c.fill();
+        c.save(); c.clip();
+        // sunburst
+        c.globalAlpha = .12; c.fillStyle = '#fff';
+        for (let a = 0; a < 24; a++) {
+          c.beginPath(); c.moveTo(w / 2, 300);
+          c.arc(w / 2, 300, 900, a * Math.PI / 12, a * Math.PI / 12 + Math.PI / 24); c.fill();
+        }
+        c.globalAlpha = 1; c.restore();
+        // brand badge
+        c.fillStyle = '#fff'; c.beginPath(); c.arc(w / 2, 90, 54, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#ff7a00'; c.font = '900 34px "Archivo Black", Impact, sans-serif'; c.textAlign = 'center';
+        c.fillText('SC', w / 2, 104);
+        c.fillStyle = j.labelInk; c.font = '600 22px Inter, sans-serif';
+        c.fillText('LES SECRETS CULINAIRES', w / 2, 180);
+        // name
+        c.lineJoin = 'round';
+        const fit = (txt, max) => { let s = 120; c.font = `400 ${s}px "Archivo Black", Impact, sans-serif`; while (c.measureText(txt).width > max && s > 40) { s -= 4; c.font = `400 ${s}px "Archivo Black", Impact, sans-serif`; } return s; };
+        let y = 300;
+        j.lines.forEach(t => {
+          const s = fit(t, w - 70);
+          c.lineWidth = 10; c.strokeStyle = 'rgba(0,0,0,.18)'; c.strokeText(t, w / 2, y + 4);
+          c.fillStyle = j.labelInk; c.fillText(t, w / 2, y); y += s * 0.95;
+        });
+        const ss = fit(j.sub, w - 120) * 0.62;
+        c.font = `400 ${Math.min(ss, 56)}px "Archivo Black", Impact, sans-serif`;
+        c.fillStyle = j.labelAccent; c.fillText(j.sub, w / 2, y + 4);
+        // fruit emoji
+        c.font = '130px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+        c.fillText(j.emoji, w / 2, y + 190);
+        // footer badge
+        roundRect(c, 40, h - 150, w - 80, 96, 48); c.fillStyle = 'rgba(255,255,255,.9)'; c.fill();
+        c.fillStyle = '#2e7d32'; c.font = '800 34px Inter, sans-serif'; c.fillText('100% NATUREL · 33cl', w / 2, h - 90);
+        labelTex.needsUpdate = true;
+      }
+      function shade(hex, amt) {
+        const col = new THREE.Color(hex); const hsl = {}; col.getHSL(hsl);
+        col.setHSL(hsl.h, hsl.s, Math.max(0, Math.min(1, hsl.l + amt))); return '#' + col.getHexString();
+      }
+
+      // shadow blob
+      const shadowTex = (() => {
+        const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
+        const g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, 'rgba(0,0,0,.35)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+        x.fillStyle = g; x.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c);
+      })();
+      const shadow = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 1.0), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false }));
+      shadow.rotation.x = -Math.PI / 2; shadow.position.y = -H / 2 - 0.35; rig.add(shadow);
+
+      /* ---- floating fruit drops ---- */
+      const COUNT = innerWidth < 700 ? 26 : 46;
+      const dropGeo = new THREE.IcosahedronGeometry(1, 2);
+      const dropMat = new THREE.MeshPhysicalMaterial({ roughness: 0.2, clearcoat: 1, clearcoatRoughness: .1 });
+      const drops = new THREE.InstancedMesh(dropGeo, dropMat, COUNT);
+      const seeds = [];
+      for (let k = 0; k < COUNT; k++) {
+        seeds.push({
+          x: (Math.random() - .5) * 14, y: (Math.random() - .5) * 9, z: -2 - Math.random() * 6,
+          s: 0.06 + Math.random() * 0.22, sp: 0.2 + Math.random() * 0.6, ph: Math.random() * Math.PI * 2,
+          squash: Math.random() < .3 ? 0.35 : 1
+        });
+      }
+      scene.add(drops);
+      const tmpM = new THREE.Matrix4(), tmpQ = new THREE.Quaternion(), tmpE = new THREE.Euler(), tmpV = new THREE.Vector3(), tmpS = new THREE.Vector3();
+      function paintDrops(j) {
+        const c = new THREE.Color();
+        for (let k = 0; k < COUNT; k++) { c.set(j.palette[k % j.palette.length]); drops.setColorAt(k, c); }
+        drops.instanceColor.needsUpdate = true;
+      }
+
+      /* ---- splash burst when adding to pack ---- */
+      const burstGeo = new THREE.SphereGeometry(1, 12, 12);
+      const bursts = [];
+      splash = () => {
+        if (reduced) return;
+        const j = JUICES[current];
+        for (let k = 0; k < 14; k++) {
+          const m = new THREE.Mesh(burstGeo, new THREE.MeshStandardMaterial({ color: j.palette[k % 3], roughness: .3, transparent: true }));
+          m.scale.setScalar(0.05 + Math.random() * 0.08);
+          m.position.copy(rig.position).add(new THREE.Vector3(0, H / 2 + 0.8, 0));
+          m.userData.v = new THREE.Vector3((Math.random() - .5) * 4, 3 + Math.random() * 3, (Math.random() - .5) * 2);
+          m.userData.life = 1;
+          scene.add(m); bursts.push(m);
+        }
+      };
+
+      /* ---- flavor change ---- */
+      const liquidColor = new THREE.Color(JUICES[0].liquid);
+      let firstPaint = true;
+      onFlavor(j => {
+        const target = new THREE.Color(j.liquid);
+        paintDrops(j);
+        if (firstPaint || reduced) {
+          firstPaint = false; liquidColor.copy(target); liquidMat.color.copy(target); drawLabel(j); return;
+        }
+        const from = liquidColor.clone();
+        const o = { t: 0 }; let swapped = false;
+        gsap.killTweensOf(spin.rotation);
+        gsap.to(o, {
+          t: 1, duration: 1.1, ease: 'power3.inOut',
+          onUpdate: () => {
+            liquidColor.copy(from).lerp(target, o.t);
+            liquidMat.color.copy(liquidColor);
+            if (!swapped && o.t > 0.45) { swapped = true; drawLabel(j); }
+          }
+        });
+        gsap.fromTo(spin.rotation, { y: spin.rotation.y % (Math.PI * 2) }, { y: (spin.rotation.y % (Math.PI * 2)) + Math.PI * 2, duration: 1.1, ease: 'power3.inOut' });
+        gsap.fromTo(spin.position, { y: 0 }, { y: 0.35, duration: .55, yoyo: true, repeat: 1, ease: 'power2.out' });
+      });
+
+      /* ---- scroll choreography ---- */
+      // positions are expressed as fractions of the visible half-width/height
+      const isMobile = () => innerWidth < 960;
+      const STAGES = {
+        // a = how much the bottle sticks to the .bottle-space element (gamme section)
+        hero:     () => isMobile() ? { a: 0, fx: 0.55, fy: -0.62, s: 0.44, ry: 0.4, rz: -0.12 } : { a: 0, fx: 0.42, fy: -0.04, s: 1.0, ry: 0.5, rz: -0.12 },
+        gamme:    () => ({ a: 1, fx: 0, fy: 0, s: 1, ry: 0, rz: 0 }),
+        pourquoi: () => isMobile() ? { a: 0, fx: 0, fy: 0.42, s: 0.42, ry: -0.6, rz: 0.15 } : { a: 0, fx: -0.48, fy: 0, s: 1.05, ry: -0.7, rz: 0.18 },
+        photo:    () => ({ a: 0, fx: isMobile() ? 0 : -0.5, fy: 1.8, s: 0.8, ry: -1, rz: 0.3 }),
+        fabrication: () => ({ a: 0, fx: 0.8, fy: -2, s: 0.6, ry: 1, rz: -0.3 }),
+        pack:     () => ({ a: 0, fx: 0.8, fy: -2, s: 0.6, ry: 1, rz: -0.3 }),
+        contact:  () => ({ a: 0, fx: 0.8, fy: -2, s: 0.6, ry: 1, rz: -0.3 })
+      };
+      const state = { ...STAGES.hero() };
+      let stageName = 'hero';
+      function goStage(name) {
+        stageName = name;
+        gsap.to(state, { ...STAGES[name](), duration: reduced ? 0 : 1.4, ease: 'power3.inOut', overwrite: true });
+      }
+      // the active stage is the section crossing 55% of the viewport height
+      const stageEls = [...document.querySelectorAll('[data-stage]')];
+      const anchorEl = document.querySelector('.bottle-space');
+      function checkStage() {
+        const line = innerHeight * 0.55;
+        const sec = stageEls.find(el => { const r = el.getBoundingClientRect(); return r.top <= line && r.bottom > line; });
+        if (sec && sec.dataset.stage !== stageName) goStage(sec.dataset.stage);
+      }
+
+      /* ---- interaction: pointer tilt + drag to rotate ---- */
+      const pointer = { x: 0, y: 0 };
+      addEventListener('pointermove', e => { pointer.x = e.clientX / innerWidth * 2 - 1; pointer.y = e.clientY / innerHeight * 2 - 1; }, { passive: true });
+      let dragY = 0, dragVel = 0, dragging = false, lastX = 0;
+      const dragZone = document.querySelector('.bottle-space');
+      dragZone.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; dragZone.setPointerCapture(e.pointerId); });
+      dragZone.addEventListener('pointermove', e => { if (!dragging) return; const dx = e.clientX - lastX; lastX = e.clientX; dragVel = dx * 0.012; dragY += dragVel; });
+      addEventListener('pointerup', () => dragging = false);
+      dragZone.style.touchAction = 'pan-y';
+      dragZone.style.cursor = 'grab';
+
+      /* ---- resize ---- */
+      function resize() {
+        renderer.setSize(innerWidth, innerHeight);
+        camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+        gsap.set(state, STAGES[stageName]());
+      }
+      addEventListener('resize', resize);
+
+      /* ---- render loop ---- */
+      const clock = new THREE.Clock();
+      const tilt = { x: 0, y: 0 };
+      let frames = 0, fpsT = 0;
+      function frame() {
+        requestAnimationFrame(frame);
+        checkStage();
+        // skip rendering while the bottle is off-screen (saves battery)
+        const off = state.fy < -1.95 || state.fy > 1.75;
+        canvas.style.visibility = off ? 'hidden' : 'visible';
+        if (off) { clock.getDelta(); return; }
+        const dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime;
+        const halfH = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z;
+        const halfW = halfH * camera.aspect;
+
+        let px = state.fx * halfW, py = state.fy * halfH, sc = state.s;
+        if (state.a > 0.001) {
+          const r = anchorEl.getBoundingClientRect();
+          const ax = ((r.left + r.width / 2) / innerWidth * 2 - 1) * halfW;
+          const ay = -((r.top + r.height / 2) / innerHeight * 2 - 1) * halfH - 0.2;
+          const as = (r.height / innerHeight) * 2 * halfH / 4.2;
+          px += (ax - px) * state.a; py += (ay - py) * state.a; sc += (as - sc) * state.a;
+        }
+        rig.position.set(px, py + (reduced ? 0 : Math.sin(t * 1.2) * 0.08), 0);
+        rig.scale.setScalar(sc);
+
+        if (!dragging) { dragVel *= 0.94; dragY += dragVel; }
+        tilt.x += ((reduced ? 0 : pointer.y * 0.18) - tilt.x) * 0.06;
+        tilt.y += ((reduced ? 0 : pointer.x * 0.35) - tilt.y) * 0.06;
+        const idle = reduced ? 0 : Math.sin(t * 0.5) * 0.25;
+        rig.rotation.set(tilt.x, state.ry + tilt.y + idle + dragY, state.rz);
+
+        // liquid sloshes against rotation velocity
+        liquid.rotation.z = THREE.MathUtils.lerp(liquid.rotation.z, -dragVel * 1.5, 0.1);
+        shadow.material.opacity = 1 - Math.min(1, Math.abs(spin.position.y) * 1.2);
+
+        // drops
+        for (let k = 0; k < COUNT; k++) {
+          const s = seeds[k];
+          const yy = reduced ? s.y : ((s.y + t * s.sp * 0.4 + 4.5) % 9) - 4.5;
+          tmpV.set(s.x + Math.sin(t * s.sp + s.ph) * 0.3 + pointer.x * 0.3 * (s.z + 8) / 8, yy, s.z);
+          tmpE.set(t * s.sp, t * s.sp * 0.7, 0); tmpQ.setFromEuler(tmpE);
+          tmpS.set(s.s, s.s * (s.squash < 1 ? 1.4 : 1), s.s * s.squash);
+          tmpM.compose(tmpV, tmpQ, tmpS); drops.setMatrixAt(k, tmpM);
+        }
+        drops.instanceMatrix.needsUpdate = true;
+
+        // bursts
+        for (let k = bursts.length - 1; k >= 0; k--) {
+          const m = bursts[k]; m.userData.v.y -= 9 * dt; m.position.addScaledVector(m.userData.v, dt);
+          m.userData.life -= dt * 0.9; m.material.opacity = Math.max(0, m.userData.life);
+          if (m.userData.life <= 0) { scene.remove(m); m.material.dispose(); bursts.splice(k, 1); }
+        }
+
+        renderer.render(scene, camera);
+
+        // adaptive resolution for slower devices
+        frames++; fpsT += dt;
+        if (fpsT > 2) {
+          if (frames / fpsT < 40 && dpr > 1) { dpr = Math.max(1, dpr - 0.5); renderer.setPixelRatio(dpr); renderer.setSize(innerWidth, innerHeight); }
+          frames = 0; fpsT = 0;
+        }
+      }
+
+      // make sure the display font is ready before painting the label
+      (document.fonts ? document.fonts.load('400 80px "Archivo Black"') : Promise.resolve())
+        .catch(() => {}).finally(() => { drawLabel(JUICES[current]); });
+
+      // intro
+      if (!reduced) gsap.from(state, { fy: -1.9, ry: state.ry - 3, duration: 1.8, ease: 'expo.out', delay: .3 });
+      frame();
+    }
+
+    /* =========================================================
+       BOOT
+       ========================================================= */
+    let webgl = false;
+    try {
+      const test = document.createElement('canvas');
+      webgl = !!(window.WebGLRenderingContext && (test.getContext('webgl2') || test.getContext('webgl')));
+    } catch (e) {}
+
+    if (webgl && window.gsap && window.ScrollTrigger) {
+      try {
+        [THREE, { RoundedBoxGeometry }, { RoomEnvironment }] = await Promise.all([
+          import('three'),
+          import('three/addons/geometries/RoundedBoxGeometry.js'),
+          import('three/addons/environments/RoomEnvironment.js')
+        ]);
+        initThree();
+      } catch (e) { console.error(e); document.documentElement.classList.add('no-webgl'); }
+    } else {
+      document.documentElement.classList.add('no-webgl');
+    }
+
+    current = -1; setFlavor(0);   // start on Bissap
+
+    // auto-cycle flavors in the hero until the user picks one
+    if (!reduced) setInterval(() => {
+      if (!userPicked && scrollY < innerHeight * 0.6 && !document.hidden) setFlavor(current + 1);
+    }, 4200);
+
+    hideLoader();
+  </script>
+</body>
+</html>
