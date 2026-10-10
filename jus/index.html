@@ -534,7 +534,7 @@
             <button data-vid="1">② Mise en bouteille</button>
           </div>
           <div class="phone">
-            <video id="fabVideo" muted playsinline preload="metadata" poster="assets/video/preparation.jpg" src="assets/video/preparation.mp4"></video>
+            <video id="fabVideo" muted playsinline preload="metadata" poster="assets/video/preparation.jpg"></video>
             <canvas id="fabCanvas" aria-hidden="true"></canvas>
           </div>
           <div class="vid-ctrl">
@@ -877,7 +877,7 @@
     ];
     // [start, end, step, label, box [x, y, w, h] normalised to the 9:16 frame, juice id]
     const VIDEOS = [
-      { src: 'assets/video/preparation.mp4', poster: 'assets/video/preparation.jpg', seg: [
+      { src: 'assets/video/preparation', poster: 'assets/video/preparation.jpg', seg: [
         [0, 1, -1, 'Gamme complète', [.03, .32, .94, .36]],
         [1, 5, 0, 'Blender gradué · volume lu sur la graduation', [.06, .03, .88, .8]],
         [5, 8, 1, 'Pulpe de mangue fraîche', [.1, .12, .8, .72]],
@@ -886,7 +886,7 @@
         [16, 24, 3, 'Bases prêtes · bassines inox', [.04, .4, .92, .56]],
         [24, 28, 5, 'Port de gants · gamme alignée', [.04, .3, .92, .4]]
       ] },
-      { src: 'assets/video/embouteillage.mp4', poster: 'assets/video/embouteillage.jpg', seg: [
+      { src: 'assets/video/embouteillage', poster: 'assets/video/embouteillage.jpg', seg: [
         [0, 3, 4, 'Ditax Menthe Citron · remplissage', [.04, .02, .5, .95], 'ditax'],
         [4, 7, 4, 'Tamarin Litchi Ananas · remplissage', [.12, .02, .58, .95], 'tamarin'],
         [7, 10, 4, 'Bissap Rouge · remplissage', [.15, .02, .62, .95], 'bissap'],
@@ -921,10 +921,18 @@
     function loadVideo(i, play = true) {
       vidIdx = i; curSeg = null;
       vidTabs.forEach((b, k) => b.classList.toggle('active', k === i));
-      fabVideo.poster = VIDEOS[i].poster; fabVideo.src = VIDEOS[i].src;
+      const v = VIDEOS[i];
+      fabVideo.poster = v.poster;
+      fabVideo.parentElement.style.background = `#000 url(${v.poster}) center / cover`;
+      // H.264 first (Safari, iOS, Chrome, Edge), VP9 WebM for browsers without H.264
+      fabVideo.innerHTML =
+        `<source src="${v.src}.mp4" type='video/mp4; codecs="avc1.640028"'>` +
+        `<source src="${v.src}.webm" type='video/webm; codecs="vp9"'>`;
+      fabVideo.load();
       log(`<span class="t">[source]</span> ${i ? 'Vidéo 2 · mise en bouteille' : 'Vidéo 1 · préparation'}`);
       if (play && fabVisible) fabVideo.play().catch(() => {});
     }
+    loadVideo(0, false);
     vidTabs.forEach((b, k) => b.onclick = () => { wantPlay = true; loadVideo(k); });
     fabVideo.addEventListener('ended', () => loadVideo((vidIdx + 1) % VIDEOS.length));
     const playBtn = document.getElementById('fabPlay');
@@ -996,7 +1004,7 @@
       }
 
       // detection box
-      if (box.a > .02) {
+      if (box.a > .02 && fabVideo.readyState >= 2) {
         const x = box.x * W, y = box.y * H, w = box.w * W, h = box.h * H, c = 18;
         fctx.globalAlpha = box.a;
         fctx.strokeStyle = 'rgba(255,179,71,.45)'; fctx.lineWidth = 1; fctx.strokeRect(x, y, w, h);
