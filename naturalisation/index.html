@@ -8,13 +8,13 @@
   :root {
     --bg: #f5f6f8; --card: #ffffff; --text: #1c2330; --muted: #677086;
     --line: #dfe3ea; --accent: #2447b8; --accent-soft: #e8edfb;
-    --ok: #17794a; --ok-soft: #e4f5ec; --danger: #b3261e; --warn-soft: #fff4d6;
+    --ok: #17794a; --ok-soft: #e4f5ec; --danger: #b3261e; --bad-soft: #fdeceb; --warn-soft: #fff4d6;
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #12151b; --card: #1b2029; --text: #e8ebf1; --muted: #98a1b3;
       --line: #2c3340; --accent: #8fa8ff; --accent-soft: #232c47;
-      --ok: #6fd3a0; --ok-soft: #173326; --danger: #ff8a80; --warn-soft: #3a3115;
+      --ok: #6fd3a0; --ok-soft: #173326; --danger: #ff8a80; --bad-soft: #3a1d1b; --warn-soft: #3a3115;
     }
   }
   * { box-sizing: border-box; }
@@ -84,6 +84,20 @@
   .ans b { color: var(--ok); }
   .exp { background: var(--warn-soft); border-left: 4px solid #d9a400; }
   .exp b { color: var(--muted); }
+  .mine { background: var(--bad-soft); border-left: 4px solid var(--danger); }
+  .mine b { color: var(--danger); }
+  .mine span { text-decoration: line-through; }
+  .key { background: var(--accent-soft); border-left: 4px solid var(--accent); font-weight: 600; }
+  .key b { color: var(--accent); }
+  .busy { display: flex; gap: 10px; align-items: center; justify-content: center; padding: 26px 14px; color: var(--muted); }
+  .spin { width: 18px; height: 18px; border: 3px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .msg:empty { display: none; }
+  .msg { margin: 10px 0 0; text-align: center; }
+  select { font: inherit; font-size: .92rem; padding: 7px 9px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); max-width: 100%; }
+  .item textarea { margin-top: 2px; background: var(--card); }
+  .item label { margin-top: 10px; }
+  .link { border: 0; background: none; padding: 0; color: var(--accent); text-decoration: underline; font-size: .85rem; }
   .empty { text-align: center; color: var(--muted); padding: 40px 10px; }
   .zoom {
     position: fixed; inset: 0; background: rgba(0,0,0,.85); display: flex;
@@ -100,41 +114,19 @@
     <div class="stats" id="stats"></div>
   </header>
 
-  <form class="card" id="form">
-    <h2 id="formTitle">Ajouter une question ratée</h2>
-
+  <section class="card" id="import">
     <div class="drop" id="drop" tabindex="0" role="button">
-      <strong>Colle ta capture d'écran avec <kbd>Ctrl</kbd> + <kbd>V</kbd></strong><br>
+      <strong>Colle la capture de ta question ratée avec <kbd>Ctrl</kbd> + <kbd>V</kbd></strong><br>
       ou glisse une image ici, ou clique pour choisir un fichier
     </div>
-    <div class="preview" id="preview" hidden>
-      <img id="previewImg" alt="Aperçu de la capture">
-      <button type="button" id="removeImg">✕ Retirer</button>
-    </div>
-    <input type="file" id="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
-
-    <label for="question">Question <span>(facultatif si elle est visible sur la capture)</span></label>
-    <textarea id="question" rows="2"></textarea>
-
-    <label for="answer">Bonne réponse</label>
-    <textarea id="answer" rows="2"></textarea>
-
-    <label for="explanation">Explication</label>
-    <textarea id="explanation" rows="3"></textarea>
-
-    <label for="theme">Thème <span>(facultatif — ex. Histoire, Institutions, Valeurs…)</span></label>
-    <input type="text" id="theme" list="themes" autocomplete="off">
-    <datalist id="themes"></datalist>
-
-    <div class="actions">
-      <button class="primary" id="submit">Enregistrer</button>
-      <button type="button" id="cancel" hidden>Annuler</button>
-      <span class="msg" id="msg"></span>
-    </div>
-  </form>
+    <div class="busy" id="busy" hidden><span class="spin"></span><span id="busyText"></span></div>
+    <p class="msg" id="msg"></p>
+    <input type="file" id="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden>
+  </section>
 
   <div class="bar">
     <input type="search" id="search" placeholder="Rechercher…">
+    <select id="themeFilter" aria-label="Thème"></select>
     <div class="seg" id="filter">
       <button type="button" data-f="todo" class="on">À revoir</button>
       <button type="button" data-f="done">Maîtrisées</button>
@@ -148,11 +140,10 @@
 
 <script>
 const $ = id => document.getElementById(id);
-const FIELDS = ['question', 'answer', 'explanation', 'theme'];
-let items = [], filter = 'todo', quiz = false;
-let pendingImage = null;   // data-URL de la nouvelle capture
-let editing = null;        // fiche en cours de modification
-let removeExisting = false;
+const FIELDS = ['question', 'answer', 'my_answer', 'explanation', 'key_point', 'theme'];
+const LABELS = {question: 'Question', answer: 'Bonne réponse', my_answer: 'Ma réponse (fausse)',
+                explanation: 'Explication', key_point: 'À retenir', theme: 'Thème'};
+let items = [], filter = 'todo', quiz = false, editingId = null;
 
 async function api(method, url, body) {
   const res = await fetch(url, {
@@ -170,76 +161,50 @@ function el(tag, cls, text) {
   if (text != null) e.textContent = text;
   return e;
 }
+function replaceItem(updated) { items = items.map(i => i.id === updated.id ? updated : i); }
 
-/* ---------- image : coller / glisser / choisir ---------- */
-function setImage(file) {
-  if (!file || !file.type.startsWith('image/')) return;
-  const reader = new FileReader();
-  reader.onload = () => { pendingImage = reader.result; removeExisting = false; showPreview(pendingImage); };
-  reader.readAsDataURL(file);
+/* ---------- import : coller / glisser / choisir, puis analyse ---------- */
+const queue = [];
+let working = false;
+
+function addImages(files) {
+  const images = [...files].filter(f => f.type.startsWith('image/'));
+  if (!images.length) return;
+  queue.push(...images);
+  if (!working) processQueue();
 }
-function showPreview(src) {
-  $('previewImg').src = src || '';
-  $('preview').hidden = !src;
-  $('drop').hidden = !!src;
+const readAsDataURL = file => new Promise((resolve, reject) => {
+  const r = new FileReader();
+  r.onload = () => resolve(r.result); r.onerror = reject;
+  r.readAsDataURL(file);
+});
+async function processQueue() {
+  working = true;
+  $('msg').textContent = '';
+  $('drop').hidden = true; $('busy').hidden = false;
+  const errors = [];
+  while (queue.length) {
+    $('busyText').textContent = 'Lecture de la capture…' + (queue.length > 1 ? ` (encore ${queue.length})` : '');
+    try {
+      items.unshift(await api('POST', '/api/erreurs', {image: await readAsDataURL(queue.shift())}));
+      render();
+    } catch (err) { errors.push(err.message); }
+  }
+  $('msg').textContent = [...new Set(errors)].join(' ');
+  $('drop').hidden = false; $('busy').hidden = true;
+  working = false;
 }
+
 document.addEventListener('paste', e => {
-  const file = [...e.clipboardData.files].find(f => f.type.startsWith('image/'));
-  if (file) { e.preventDefault(); setImage(file); }
+  if (e.clipboardData.files.length) { e.preventDefault(); addImages(e.clipboardData.files); }
 });
 const drop = $('drop');
 drop.onclick = () => $('file').click();
 drop.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('file').click(); } };
-$('file').onchange = e => { setImage(e.target.files[0]); e.target.value = ''; };
+$('file').onchange = e => { addImages(e.target.files); e.target.value = ''; };
 ['dragenter', 'dragover'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
 ['dragleave', 'drop'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
-document.addEventListener('drop', e => setImage(e.dataTransfer.files[0]));
-$('removeImg').onclick = () => { pendingImage = null; removeExisting = !!(editing && editing.image); showPreview(null); };
-
-/* ---------- formulaire ---------- */
-function resetForm() {
-  $('form').reset();
-  pendingImage = null; editing = null; removeExisting = false;
-  showPreview(null);
-  $('formTitle').textContent = 'Ajouter une question ratée';
-  $('submit').textContent = 'Enregistrer';
-  $('cancel').hidden = true;
-  $('msg').textContent = '';
-}
-$('cancel').onclick = resetForm;
-
-function startEdit(item) {
-  resetForm();
-  editing = item;
-  FIELDS.forEach(f => $(f).value = item[f]);
-  showPreview(item.image ? '/images/' + item.image : null);
-  $('formTitle').textContent = 'Modifier la fiche';
-  $('submit').textContent = 'Mettre à jour';
-  $('cancel').hidden = false;
-  $('form').scrollIntoView({behavior: 'smooth', block: 'start'});
-}
-
-$('form').onsubmit = async e => {
-  e.preventDefault();
-  const body = Object.fromEntries(FIELDS.map(f => [f, $(f).value]));
-  if (pendingImage) body.image = pendingImage;
-  if (removeExisting) body.remove_image = true;
-  $('submit').disabled = true;
-  try {
-    if (editing) {
-      const updated = await api('PUT', '/api/erreurs/' + editing.id, body);
-      items = items.map(i => i.id === updated.id ? updated : i);
-    } else {
-      items.unshift(await api('POST', '/api/erreurs', body));
-    }
-    resetForm();
-    render();
-  } catch (err) {
-    $('msg').textContent = err.message;
-  } finally {
-    $('submit').disabled = false;
-  }
-};
+document.addEventListener('drop', e => addImages(e.dataTransfer.files));
 
 /* ---------- liste ---------- */
 function render() {
@@ -247,13 +212,17 @@ function render() {
   $('stats').textContent = items.length
     ? `${todo} à revoir · ${items.length - todo} maîtrisée${items.length - todo > 1 ? 's' : ''}`
     : '';
-  $('themes').replaceChildren(...[...new Set(items.map(i => i.theme).filter(Boolean))].map(t => {
-    const o = el('option'); o.value = t; return o;
-  }));
+
+  const sel = $('themeFilter'), current = sel.value;
+  const themes = [...new Set(items.map(i => i.theme).filter(Boolean))].sort();
+  sel.replaceChildren(new Option('Tous les thèmes', ''), ...themes.map(t => new Option(t, t)));
+  sel.value = themes.includes(current) ? current : '';
+  sel.hidden = themes.length < 2;
 
   const q = $('search').value.trim().toLowerCase();
   const shown = items.filter(i =>
     (filter === 'all' || (filter === 'done') === !!i.mastered) &&
+    (!sel.value || i.theme === sel.value) &&
     (!q || FIELDS.some(f => i[f].toLowerCase().includes(q))));
 
   const list = $('list');
@@ -261,10 +230,16 @@ function render() {
   if (!shown.length) {
     list.append(el('div', 'empty', items.length
       ? 'Aucune fiche ne correspond à ce filtre.'
-      : 'Aucune question pour l\'instant. Ajoute ta première erreur ci-dessus.'));
+      : 'Aucune fiche pour l\'instant. Colle ta première capture ci-dessus.'));
     return;
   }
-  shown.forEach(item => list.append(card(item)));
+  shown.forEach(item => list.append(item.id === editingId ? editCard(item) : card(item)));
+}
+
+function block(cls, label, text) {
+  const b = el('div', 'block ' + cls);
+  b.append(el('b', '', label), el('span', '', text));
+  return b;
 }
 
 function card(item) {
@@ -275,52 +250,40 @@ function card(item) {
   if (item.mastered) meta.append(el('span', 'chip ok', '✓ Maîtrisée'));
   meta.append(el('span', '', 'Ajoutée le ' + new Date(item.created_at).toLocaleDateString('fr-FR',
     {day: 'numeric', month: 'long', year: 'numeric'})));
-  c.append(meta);
-
-  if (item.question) c.append(el('p', 'q', item.question));
-
-  // En mode révision, tout ce qui dévoile la réponse est masqué jusqu'au clic.
-  // La capture reste visible seulement si c'est elle qui porte la question.
-  const secret = [];
-  let img = null;
   if (item.image) {
-    img = el('img', 'shot');
-    img.src = '/images/' + item.image; img.alt = 'Capture de la question'; img.loading = 'lazy';
-    img.onclick = () => zoom(img.src);
-    c.append(img);
-    if (item.question) secret.push(img);
+    const see = el('button', 'link', 'Voir la capture');
+    see.onclick = () => zoom('/images/' + item.image);
+    meta.append(see);
   }
-  if (item.answer) {
-    const a = el('div', 'block ans'); a.append(el('b', '', 'Bonne réponse'), item.answer);
-    c.append(a); secret.push(a);
-  }
-  if (item.explanation) {
-    const x = el('div', 'block exp'); x.append(el('b', '', 'Explication'), item.explanation);
-    c.append(x); secret.push(x);
-  }
+  c.append(meta, el('p', 'q', item.question));
+
+  // En mode révision, tout ce qui suit la question est masqué jusqu'au clic.
+  const secret = [];
+  if (item.my_answer) secret.push(block('mine', 'Ma réponse', item.my_answer));
+  if (item.answer) secret.push(block('ans', 'Bonne réponse', item.answer));
+  if (item.explanation) secret.push(block('exp', 'Explication', item.explanation));
+  if (item.key_point) secret.push(block('key', 'À retenir', item.key_point));
+  c.append(...secret);
 
   const actions = el('div', 'actions');
   if (quiz && secret.length) {
     secret.forEach(s => s.hidden = true);
     const reveal = el('button', 'primary', 'Voir la réponse');
-    reveal.type = 'button';
     reveal.onclick = () => { secret.forEach(s => s.hidden = false); reveal.remove(); };
     actions.append(reveal);
   }
   const done = el('button', '', item.mastered ? '↺ À revoir' : '✓ Je la maîtrise');
   done.onclick = async () => {
-    const updated = await api('PUT', '/api/erreurs/' + item.id, {mastered: !item.mastered});
-    items = items.map(i => i.id === updated.id ? updated : i);
+    replaceItem(await api('PUT', '/api/erreurs/' + item.id, {mastered: !item.mastered}));
     render();
   };
-  const edit = el('button', '', 'Modifier');
-  edit.onclick = () => startEdit(item);
+  const edit = el('button', '', 'Corriger');
+  edit.onclick = () => { editingId = item.id; render(); };
   const del = el('button', 'danger', 'Supprimer');
   del.onclick = async () => {
     if (!confirm('Supprimer définitivement cette fiche ?')) return;
     await api('DELETE', '/api/erreurs/' + item.id);
     items = items.filter(i => i.id !== item.id);
-    if (editing && editing.id === item.id) resetForm();
     render();
   };
   actions.append(done, edit, del);
@@ -328,9 +291,37 @@ function card(item) {
   return c;
 }
 
+// Fiche en mode correction : au cas où la lecture de l'image s'est trompée.
+function editCard(item) {
+  const c = el('article', 'card item');
+  const inputs = {};
+  FIELDS.forEach(f => {
+    const label = el('label', '', LABELS[f]);
+    const input = f === 'theme' ? el('input') : el('textarea');
+    if (f === 'theme') input.type = 'text';
+    else input.rows = f === 'explanation' ? 4 : 2;
+    input.value = item[f];
+    inputs[f] = input;
+    label.append(input);
+    c.append(label);
+  });
+  const actions = el('div', 'actions');
+  const save = el('button', 'primary', 'Enregistrer');
+  save.onclick = async () => {
+    replaceItem(await api('PUT', '/api/erreurs/' + item.id,
+      Object.fromEntries(FIELDS.map(f => [f, inputs[f].value]))));
+    editingId = null; render();
+  };
+  const cancel = el('button', '', 'Annuler');
+  cancel.onclick = () => { editingId = null; render(); };
+  actions.append(save, cancel);
+  c.append(actions);
+  return c;
+}
+
 function zoom(src) {
   const z = el('div', 'zoom');
-  const i = el('img'); i.src = src; i.alt = '';
+  const i = el('img'); i.src = src; i.alt = 'Capture d\'origine';
   z.append(i);
   z.onclick = () => z.remove();
   document.body.append(z);
@@ -340,6 +331,7 @@ document.addEventListener('keydown', e => {
 });
 
 $('search').oninput = render;
+$('themeFilter').onchange = render;
 $('filter').onclick = e => {
   if (!e.target.dataset.f) return;
   filter = e.target.dataset.f;
