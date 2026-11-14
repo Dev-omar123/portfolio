@@ -84,6 +84,15 @@
   .ans b { color: var(--ok); }
   .exp { background: var(--warn-soft); border-left: 4px solid #d9a400; }
   .exp b { color: var(--muted); }
+  .opts { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
+  .opts li { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; }
+  .opts em { font-style: normal; font-size: .8rem; font-weight: 700; white-space: nowrap; }
+  .opts .good { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); font-weight: 600; }
+  .opts .bad { background: var(--bad-soft); border-color: var(--danger); color: var(--danger); }
+  .opts .bad span { text-decoration: line-through; }
+  .opts.masked li { background: none; border-color: var(--line); color: inherit; font-weight: 400; }
+  .opts.masked span { text-decoration: none; }
+  .opts.masked em { display: none; }
   .mine { background: var(--bad-soft); border-left: 4px solid var(--danger); }
   .mine b { color: var(--danger); }
   .mine span { text-decoration: line-through; }
@@ -140,9 +149,9 @@
 
 <script>
 const $ = id => document.getElementById(id);
-const FIELDS = ['question', 'answer', 'my_answer', 'explanation', 'key_point', 'theme'];
-const LABELS = {question: 'Question', answer: 'Bonne réponse', my_answer: 'Ma réponse (fausse)',
-                explanation: 'Explication', key_point: 'À retenir', theme: 'Thème'};
+const FIELDS = ['question', 'options', 'answer', 'my_answer', 'explanation', 'key_point', 'theme'];
+const LABELS = {question: 'Question', options: 'Propositions (une par ligne)', answer: 'Bonne réponse', my_answer: 'Ma réponse (fausse)',
+                explanation: 'Explication', key_point: 'À retenir (facultatif)', theme: 'Thème (facultatif)'};
 let items = [], filter = 'todo', quiz = false, editingId = null;
 
 async function api(method, url, body) {
@@ -257,19 +266,36 @@ function card(item) {
   }
   c.append(meta, el('p', 'q', item.question));
 
-  // En mode révision, tout ce qui suit la question est masqué jusqu'au clic.
+  // Les propositions sont toujours visibles ; en mode révision, leurs couleurs
+  // et tout ce qui suit restent masqués jusqu'au clic.
   const secret = [];
-  if (item.my_answer) secret.push(block('mine', 'Ma réponse', item.my_answer));
-  if (item.answer) secret.push(block('ans', 'Bonne réponse', item.answer));
+  const options = item.options ? item.options.split('\n').filter(Boolean) : [];
+  const same = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
+  let list = null;
+  if (options.length) {
+    list = el('ul', 'opts');
+    options.forEach(o => {
+      const li = el('li', same(o, item.answer) ? 'good' : same(o, item.my_answer) ? 'bad' : '');
+      li.append(el('span', '', o));
+      if (li.className === 'good') li.append(el('em', '', '✓ Bonne réponse'));
+      if (li.className === 'bad') li.append(el('em', '', '✗ Ma réponse'));
+      list.append(li);
+    });
+    c.append(list);
+  }
+  const listed = t => options.some(o => same(o, t));
+  if (item.my_answer && !listed(item.my_answer)) secret.push(block('mine', 'Ma réponse', item.my_answer));
+  if (item.answer && !listed(item.answer)) secret.push(block('ans', 'Bonne réponse', item.answer));
   if (item.explanation) secret.push(block('exp', 'Explication', item.explanation));
   if (item.key_point) secret.push(block('key', 'À retenir', item.key_point));
   c.append(...secret);
 
   const actions = el('div', 'actions');
-  if (quiz && secret.length) {
+  if (quiz && (secret.length || list)) {
     secret.forEach(s => s.hidden = true);
+    list?.classList.add('masked');
     const reveal = el('button', 'primary', 'Voir la réponse');
-    reveal.onclick = () => { secret.forEach(s => s.hidden = false); reveal.remove(); };
+    reveal.onclick = () => { secret.forEach(s => s.hidden = false); list?.classList.remove('masked'); reveal.remove(); };
     actions.append(reveal);
   }
   const done = el('button', '', item.mastered ? '↺ À revoir' : '✓ Je la maîtrise');
@@ -299,7 +325,7 @@ function editCard(item) {
     const label = el('label', '', LABELS[f]);
     const input = f === 'theme' ? el('input') : el('textarea');
     if (f === 'theme') input.type = 'text';
-    else input.rows = f === 'explanation' ? 4 : 2;
+    else input.rows = f === 'explanation' || f === 'options' ? 4 : 2;
     input.value = item[f];
     inputs[f] = input;
     label.append(input);
